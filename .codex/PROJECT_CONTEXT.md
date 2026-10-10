@@ -101,7 +101,8 @@
 | Google 로그인(Supabase Google 제공자) | 이미 설정됨(공유) | `hiroo0318's Project`에 다른 앱용으로 켜져 있는 Google 제공자·OAuth 클라이언트를 그대로 공유한다(2026-10-09 사용자 확인). 할 일: 동의 화면이 테스트 상태면 가족 이메일을 테스트 사용자로 추가. 로그인 창에는 기존 동의 화면의 앱 이름이 보인다. Site URL은 바꾸지 않고 채널담 주소(로컬 `http://localhost:3000/**`, 이후 Vercel 주소)를 Redirect URLs에 추가하며, 코드에서 `redirectTo`를 지정한다 |
 | YouTube Data API v3 키 | 대기 | 기존 OAuth 클라이언트가 있는 Google Cloud 프로젝트에서 API 사용 설정 후 키 생성. API 제한 걸고 서버에서만 사용. `.env.local`에 직접 입력 |
 | 최초 부모 이메일 | 대기 | `FIRST_PARENT_EMAIL` 환경변수 |
-| Vercel 배포·Supabase Site URL/리디렉션 허용 목록 | 첫 배포 때 | |
+| Vercel 배포 | 완료(2026-10-10) | https://003-youtube-bookmark.vercel.app (Root Directory `web`). 접속 확인: `/`→`/login` 이동, 로그인 화면·manifest 정상, 크론 주소는 비밀값 없이 401 |
+| Supabase Redirect URLs에 배포 주소 추가 | 확인 필요 | `https://003-youtube-bookmark.vercel.app/**` 추가(Site URL은 변경하지 않음) |
 
 ## 승인 요청 알림 검토 — 2026-10-09 제안, 미확정
 
