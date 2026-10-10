@@ -81,7 +81,7 @@
 
 - 위치: `web/` (Next.js 16.4 App Router, React 19.3, Tailwind 4, @supabase/ssr). DB 마이그레이션은 `web/supabase/migrations/`.
 - 1차 구현 범위: Google 로그인·최초 부모 생성·가족 연결, 아이(승인 채널 영상+즉시 검색, YouTube 검색·채널 추가 요청, 재생, 내 요청), 부모(대기함, 요청 상세 승인·거절, 채널 관리·직접 승인, 가족 관리, 설정: 아이별 승인 모드·검색 사용량), 재생 가능 판정·6시간 갱신·30일 캐시 정리.
-- 저장소: 프로젝트 루트 전체를 하나의 git 저장소로 관리한다(2026-10-10 초기 커밋, 브랜치 `main`). GitHub 연결·Vercel 배포는 사용자가 진행하며, Vercel Root Directory는 `web`, 환경변수 6개(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `YOUTUBE_API_KEY`, `FIRST_PARENT_EMAIL`, `CRON_SECRET`)와 Supabase Redirect URLs에 배포 주소 추가가 필요하다.
+- 저장소: 프로젝트 루트 전체를 하나의 git 저장소로 관리한다(2026-10-10 초기 커밋, 브랜치 `main`). GitHub: https://github.com/hiroo0318/003-YOUTUBE-Bookmark (2026-10-10 연결·푸시 완료). GitHub 연결·Vercel 배포는 사용자가 진행하며, Vercel Root Directory는 `web`, 환경변수 6개(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `YOUTUBE_API_KEY`, `FIRST_PARENT_EMAIL`, `CRON_SECRET`)와 Supabase Redirect URLs에 배포 주소 추가가 필요하다.
 - 남은 범위: 웹 푸시(VAPID·서비스 워커·구독 관리) — `src/lib/push.ts`는 현재 빈 함수. 실기기 검증, Vercel 배포.
 
 ## 후속 검토 항목 — 2026-10-10
