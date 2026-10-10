@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>채널 관리</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2F5BEA}a:hover{color:#2347C5}
+.noscroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F7F8FA; color: #15171A; font-family: 'IBM Plex Sans KR', system-ui, sans-serif; overflow: hidden">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 8px">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span aria-hidden="true" style="width: 30px; height: 30px; border-radius: 9px; background: #2F5BEA; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" stroke="none"><path d="M7 3h10a1.5 1.5 0 0 1 1.5 1.5V21l-6.5-4.2L5.5 21V4.5A1.5 1.5 0 0 1 7 3z"></path></svg></span>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; letter-spacing: -0.3px">채널담</h1>
+    </div>
+    <div style="width: 36px; height: 36px; border-radius: 999px; background: #15171A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600" aria-label="부모 프로필">엄</div>
+  </header>
+
+  <div style="padding: 8px 20px 0; display: flex; flex-direction: column; gap: 12px">
+    <div role="tablist" aria-label="아이 선택" style="display: flex; gap: 8px">
+      <sc-for list="{{kids}}" as="k" hint-placeholder-count="2">
+        <sc-if value="{{k.selected}}" hint-placeholder-val="{{false}}">
+          <button type="button" role="tab" aria-selected="true" onClick="{{k.pick}}" style="height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid #15171A; background: #15171A; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{k.name}}</button>
+        </sc-if>
+        <sc-if value="{{k.unselected}}" hint-placeholder-val="{{true}}">
+          <button type="button" role="tab" aria-selected="false" onClick="{{k.pick}}" style="height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid #E3E6EB; background: #FFFFFF; color: #15171A; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer">{{k.name}}</button>
+        </sc-if>
+      </sc-for>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; border-radius: 12px; background: #EBEEF2">
+      <sc-if value="{{onApproved}}" hint-placeholder-val="{{true}}">
+        <button type="button" style="height: 40px; border-radius: 9px; border: none; background: #FFFFFF; color: #15171A; font-family: inherit; font-size: 15px; font-weight: 600; box-shadow: 0 1px 2px rgba(21,23,26,0.08); cursor: pointer">승인 {{approvedCount}}</button>
+        <button type="button" onClick="{{showRejected}}" style="height: 40px; border-radius: 9px; border: none; background: transparent; color: #5B6270; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer">거절 {{rejectedCount}}</button>
+      </sc-if>
+      <sc-if value="{{onRejected}}" hint-placeholder-val="{{false}}">
+        <button type="button" onClick="{{showApproved}}" style="height: 40px; border-radius: 9px; border: none; background: transparent; color: #5B6270; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer">승인 {{approvedCount}}</button>
+        <button type="button" style="height: 40px; border-radius: 9px; border: none; background: #FFFFFF; color: #15171A; font-family: inherit; font-size: 15px; font-weight: 600; box-shadow: 0 1px 2px rgba(21,23,26,0.08); cursor: pointer">거절 {{rejectedCount}}</button>
+      </sc-if>
+    </div>
+  </div>
+
+  <main class="noscroll" style="flex: 1; overflow-y: auto; padding: 14px 20px 20px; display: flex; flex-direction: column; gap: 10px">
+    <sc-if value="{{onApproved}}" hint-placeholder-val="{{true}}">
+      <button type="button" style="height: 48px; border-radius: 12px; border: 1px dashed #A9B7E8; background: #FFFFFF; color: #2347C5; font-family: inherit; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        채널 찾아서 직접 승인
+      </button>
+    </sc-if>
+
+    <sc-for list="{{rows}}" as="c" hint-placeholder-count="4">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E6EB">
+        <div style="flex: none; width: 40px; height: 40px; border-radius: 999px; background: {{c.tint}}; color: #15171A; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700">{{c.initial}}</div>
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
+          <span style="font-size: 16px; font-weight: 600; line-height: 1.4">{{c.name}}</span>
+          <span style="font-size: 14px; line-height: 1.4; color: #5B6270">{{c.meta}}</span>
+        </div>
+        <button type="button" style="flex: none; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #E3E6EB; background: #FFFFFF; color: #15171A; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">{{c.action}}</button>
+      </div>
+    </sc-for>
+
+    <p style="margin: 6px 2px 0; font-size: 14px; line-height: 1.5; color: #5B6270">{{footnote}}</p>
+  </main>
+
+  <nav aria-label="부모 메뉴" style="flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid #E3E6EB; background: #FFFFFF; padding: 6px 8px 18px">
+    <a href="ParentInbox.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,12 16,12 14,15 10,15 8,12 2,12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+      <span style="position: absolute; top: 2px; left: 50%; margin-left: 8px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: #C2410C; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">2</span>
+      대기함
+    </a>
+    <a href="ParentChannels.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #2F5BEA; font-size: 12px; font-weight: 600">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><polygon points="10,9 15,12 10,15" fill="currentColor"></polygon></svg>
+      채널 관리
+    </a>
+    <a href="ParentFamily.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M17 14a5 5 0 0 1 4.5 5"></path></svg>
+      가족
+    </a>
+    <a href="ParentSettings.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg>
+      설정
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { kid: 'jimin', tab: 'approved' };
+  }
+  renderVals() {
+    const data = {
+      jimin: {
+        approved: [
+          { name: '과학 실험실', initial: '과', tint: '#DCE6FF', meta: '3일 전 승인 · 요청으로 추가' },
+          { name: '수학 쉽게 쌤', initial: '수', tint: '#DDF0E4', meta: '2주 전 승인 · 직접 추가' },
+          { name: '그림 그리는 하루', initial: '그', tint: '#FBE8D7', meta: '3주 전 승인 · 요청으로 추가' },
+          { name: '영어 한 문장', initial: '영', tint: '#ECE3FA', meta: '1달 전 승인 · 직접 추가' }
+        ],
+        rejected: [
+          { name: '게임 하이라이트 TV', initial: '게', tint: '#EEF0F3', meta: '5일 전 거절' }
+        ]
+      },
+      seojun: {
+        approved: [
+          { name: '과학 실험실', initial: '과', tint: '#DCE6FF', meta: '1주 전 승인 · 직접 추가' },
+          { name: '동화 읽어 주는 밤', initial: '동', tint: '#F3E3EA', meta: '2주 전 승인 · 요청으로 추가' }
+        ],
+        rejected: []
+      }
+    };
+    const kids = [{ id: 'jimin', name: '지민' }, { id: 'seojun', name: '서준' }];
+    const d = data[this.state.kid];
+    const onApproved = this.state.tab === 'approved';
+    const rows = (onApproved ? d.approved : d.rejected).map((c) => ({ ...c, action: onApproved ? '승인 취소' : '거절 풀기' }));
+    return {
+      kids: kids.map((k) => ({ ...k, selected: k.id === this.state.kid, unselected: k.id !== this.state.kid, pick: () => this.setState({ kid: k.id }) })),
+      onApproved,
+      onRejected: !onApproved,
+      showApproved: () => this.setState({ tab: 'approved' }),
+      showRejected: () => this.setState({ tab: 'rejected' }),
+      approvedCount: d.approved.length,
+      rejectedCount: d.rejected.length,
+      rows,
+      footnote: onApproved
+        ? '승인을 취소하면 그 채널 영상이 아이 목록에서 빠지고, 아이는 다시 요청할 수 있어요.'
+        : (rows.length ? '거절을 풀면 아이가 그 채널을 다시 요청할 수 있어요.' : '거절한 채널이 없어요.')
+    };
+  }
+}
+</script>
+</body>
+</html>

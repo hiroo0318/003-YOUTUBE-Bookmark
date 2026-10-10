@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>검색</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2F5BEA}a:hover{color:#2347C5}
+input::placeholder{color:#7A8190}
+.noscroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F7F8FA; color: #15171A; font-family: 'IBM Plex Sans KR', system-ui, sans-serif; overflow: hidden">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 8px">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span aria-hidden="true" style="width: 30px; height: 30px; border-radius: 9px; background: #2F5BEA; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" stroke="none"><path d="M7 3h10a1.5 1.5 0 0 1 1.5 1.5V21l-6.5-4.2L5.5 21V4.5A1.5 1.5 0 0 1 7 3z"></path></svg></span>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; letter-spacing: -0.3px">채널담</h1>
+    </div>
+    <div style="width: 36px; height: 36px; border-radius: 999px; background: #E8EEFF; color: #2347C5; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600" aria-label="지민 프로필">지</div>
+  </header>
+
+  <sc-if value="{{modeOn}}" hint-placeholder-val="{{true}}">
+    <div style="margin: 4px 20px 0; padding: 10px 12px; border-radius: 12px; background: #EEF2FF; color: #2A3F8F; display: flex; gap: 8px; align-items: flex-start; font-size: 15px; font-weight: 500; line-height: 1.45">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 2px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="11" x2="12" y2="16"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      <span>부모님이 고른 채널만 재생돼요. YouTube의 제한이 아니라 우리 가족 설정이에요.</span>
+    </div>
+  </sc-if>
+  <sc-if value="{{modeOff}}" hint-placeholder-val="{{false}}">
+    <div style="margin: 4px 20px 0; padding: 10px 12px; border-radius: 12px; background: #EAF6EE; color: #1E5B34; display: flex; gap: 8px; align-items: flex-start; font-size: 15px; font-weight: 500; line-height: 1.45">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 2px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="11" x2="12" y2="16"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      <span>지금은 부모님 설정으로 검색한 영상을 바로 볼 수 있어요.</span>
+    </div>
+  </sc-if>
+
+  <form onSubmit="{{onSubmit}}" style="margin: 14px 20px 0; display: flex; gap: 8px">
+    <label for="sq" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">YouTube 검색어</label>
+    <input id="sq" type="search" value="{{draft}}" onChange="{{onDraft}}" placeholder="보고 싶은 영상을 찾아보세요" style="flex: 1; min-width: 0; box-sizing: border-box; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #E3E6EB; background: #FFFFFF; font-family: inherit; font-size: 16px; color: #15171A; outline: none">
+    <button type="submit" style="flex: none; height: 48px; padding: 0 20px; border-radius: 12px; border: none; background: #2F5BEA; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer">검색</button>
+  </form>
+
+  <p style="margin: 14px 20px 6px; font-size: 14px; line-height: 1.4; color: #5B6270">‘{{query}}’ 검색 결과</p>
+
+  <main class="noscroll" style="flex: 1; overflow-y: auto; padding: 4px 20px 16px; display: flex; flex-direction: column; gap: 16px">
+    <sc-for list="{{results}}" as="r" hint-placeholder-count="5">
+      <sc-if value="{{r.isPlay}}" hint-placeholder-val="{{true}}">
+        <a href="KidPlayer.dc.html" style="display: flex; gap: 12px; text-decoration: none; color: #15171A; align-items: flex-start">
+          <div style="position: relative; flex: none; width: 140px; height: 79px; border-radius: 10px; background: {{r.tint}}; display: flex; align-items: center; justify-content: center">
+            <span style="width: 34px; height: 34px; border-radius: 999px; background: rgba(21,23,26,0.72); display: flex; align-items: center; justify-content: center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFFFFF" stroke="none"><polygon points="7,4 20,12 7,20"></polygon></svg>
+            </span>
+            <span style="position: absolute; right: 6px; bottom: 6px; padding: 1px 5px; border-radius: 4px; background: rgba(21,23,26,0.8); color: #FFFFFF; font-size: 12px; font-weight: 600">{{r.dur}}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; padding-top: 2px">
+            <span style="font-size: 16px; font-weight: 600; line-height: 1.4">{{r.title}}</span>
+            <span style="font-size: 14px; line-height: 1.4; color: #5B6270">{{r.chName}}</span>
+            <sc-if value="{{r.showApproved}}" hint-placeholder-val="{{true}}">
+              <span style="align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: #E8EEFF; color: #2347C5; font-size: 12px; font-weight: 600">승인 채널</span>
+            </sc-if>
+          </div>
+        </a>
+      </sc-if>
+
+      <sc-if value="{{r.isNone}}" hint-placeholder-val="{{false}}">
+        <a href="KidRequestSheet.dc.html" style="display: flex; gap: 12px; text-decoration: none; color: #15171A; align-items: flex-start">
+          <div style="position: relative; flex: none; width: 140px; height: 79px; border-radius: 10px; background: {{r.tint}}">
+            <span style="position: absolute; right: 6px; bottom: 6px; padding: 1px 5px; border-radius: 4px; background: rgba(21,23,26,0.8); color: #FFFFFF; font-size: 12px; font-weight: 600">{{r.dur}}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; padding-top: 2px">
+            <span style="font-size: 16px; font-weight: 600; line-height: 1.4">{{r.title}}</span>
+            <span style="font-size: 14px; line-height: 1.4; color: #5B6270">{{r.chName}}</span>
+            <span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9D3F5; background: #FFFFFF; color: #2347C5; font-size: 14px; font-weight: 600">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              채널 추가 요청
+            </span>
+          </div>
+        </a>
+      </sc-if>
+
+      <sc-if value="{{r.isPending}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 12px; align-items: flex-start">
+          <div style="position: relative; flex: none; width: 140px; height: 79px; border-radius: 10px; background: {{r.tint}}">
+            <span style="position: absolute; right: 6px; bottom: 6px; padding: 1px 5px; border-radius: 4px; background: rgba(21,23,26,0.8); color: #FFFFFF; font-size: 12px; font-weight: 600">{{r.dur}}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; padding-top: 2px">
+            <span style="font-size: 16px; font-weight: 600; line-height: 1.4">{{r.title}}</span>
+            <span style="font-size: 14px; line-height: 1.4; color: #5B6270">{{r.chName}}</span>
+            <span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; background: #FFF1DB; color: #8A4B00; font-size: 12px; font-weight: 600">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12,7 12,12 15,14"></polyline></svg>
+              부모님 확인 중
+            </span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{r.isRejected}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 12px; align-items: flex-start">
+          <div style="position: relative; flex: none; width: 140px; height: 79px; border-radius: 10px; background: {{r.tint}}">
+            <span style="position: absolute; right: 6px; bottom: 6px; padding: 1px 5px; border-radius: 4px; background: rgba(21,23,26,0.8); color: #FFFFFF; font-size: 12px; font-weight: 600">{{r.dur}}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; padding-top: 2px">
+            <span style="font-size: 16px; font-weight: 600; line-height: 1.4; color: #5B6270">{{r.title}}</span>
+            <span style="font-size: 14px; line-height: 1.4; color: #5B6270">{{r.chName}}</span>
+            <span style="align-self: flex-start; padding: 3px 8px; border-radius: 999px; background: #EEF0F3; color: #4A505C; font-size: 12px; font-weight: 600">부모님이 거절한 채널</span>
+          </div>
+        </div>
+      </sc-if>
+    </sc-for>
+    <button type="button" style="height: 48px; border-radius: 12px; border: 1px solid #E3E6EB; background: #FFFFFF; color: #15171A; font-family: inherit; font-size: 16px; font-weight: 500; cursor: pointer">결과 더 보기</button>
+  </main>
+
+  <nav aria-label="아이 메뉴" style="flex: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid #E3E6EB; background: #FFFFFF; padding: 6px 8px 18px">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><polygon points="10,9 15,12 10,15" fill="currentColor"></polygon></svg>
+      승인 채널 영상
+    </a>
+    <a href="KidSearch.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #2F5BEA; font-size: 12px; font-weight: 600">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      검색
+    </a>
+    <a href="KidMyRequests.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>
+      <span style="position: absolute; top: 2px; left: 50%; margin-left: 8px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: #C2410C; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">1</span>
+      내 요청
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"approvalMode":{"editor":"boolean","default":true,"section":"상태"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { draft: '공룡', query: '공룡' };
+  }
+  renderVals() {
+    const on = this.props.approvalMode ?? true;
+    const raw = [
+      { title: '공룡은 왜 멸종했을까? 5분 정리', chName: '과학 실험실', dur: '5:12', tint: '#DCE6FF', st: 'approved' },
+      { title: '티라노사우루스 실제 크기 비교', chName: '공룡 박물관 탐험', dur: '7:40', tint: '#E3EFD9', st: 'none' },
+      { title: '공룡 화석 발굴 현장 따라가기', chName: '발굴하는 사람들', dur: '18:03', tint: '#F6E6D5', st: 'pending' },
+      { title: '공룡 게임 끝판왕 공략', chName: '게임 하이라이트 TV', dur: '22:47', tint: '#E9E4F2', st: 'rejected' },
+      { title: '종이 한 장으로 공룡 접기', chName: '종이접기 공방', dur: '6:25', tint: '#F3E3EA', st: 'none' }
+    ];
+    return {
+      modeOn: on,
+      modeOff: !on,
+      draft: this.state.draft,
+      query: this.state.query,
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      onSubmit: (e) => { e.preventDefault(); this.setState({ query: this.state.draft }); },
+      results: raw.map((r) => ({
+        ...r,
+        isPlay: !on || r.st === 'approved',
+        showApproved: on && r.st === 'approved',
+        isNone: on && r.st === 'none',
+        isPending: on && r.st === 'pending',
+        isRejected: on && r.st === 'rejected'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

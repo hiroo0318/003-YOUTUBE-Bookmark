@@ -1,0 +1,42 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "KidPlayer.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "KID-03 재생", "w": 390, "x": 1410, "y": 0},
+    "KidRequestSheet.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "KID-04 채널 추가 요청", "w": 390, "x": 940, "y": 0},
+    "KidSearch.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "KID-02 검색", "w": 390, "x": 470, "y": 0},
+    "Main.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "KID-01 승인 채널 영상", "w": 390, "x": 0, "y": 0},
+    "KidMyRequests.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "KID-05 내 요청", "w": 390, "x": 1880, "y": 0},
+    "ParentInbox.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "PAR-01 승인 대기함", "w": 390, "x": 0, "y": 1264},
+    "ParentRequestDetail.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "PAR-02 요청 상세", "w": 390, "x": 470, "y": 1264},
+    "ParentChannels.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "PAR-03 채널 관리", "w": 390, "x": 940, "y": 1264},
+    "ParentFamily.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "PAR-04 가족 관리", "w": 390, "x": 1410, "y": 1264},
+    "ParentSettings.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "PAR-05 설정", "w": 390, "x": 1880, "y": 1264},
+    "Login.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "COM-01 로그인", "w": 390, "x": 0, "y": 2528},
+    "NoAccess.dc.html": {"h": 844, "is_interactive": true, "radius": 28, "title": "COM-02 접근 불가", "w": 390, "x": 470, "y": 2528}
+  },
+  "createdOnFiles": {"at": "2026-10-09T23:30:00Z", "v": 1},
+  "designSystems": [],
+  "launch": {"view": "canvas"},
+  "notes": {
+    "kidTitle": {"kind": "title1", "maxW": 2270, "text": "아이 화면", "w": 240, "x": 0, "y": -300},
+    "parentTitle": {"kind": "title1", "maxW": 2270, "text": "부모 화면", "w": 240, "x": 0, "y": 964},
+    "commonTitle": {"kind": "title1", "maxW": 860, "text": "공통 화면", "w": 240, "x": 0, "y": 2228}
+  },
+  "order": [
+    "Main.dc.html",
+    "KidSearch.dc.html",
+    "KidRequestSheet.dc.html",
+    "KidPlayer.dc.html",
+    "KidMyRequests.dc.html",
+    "ParentInbox.dc.html",
+    "ParentRequestDetail.dc.html",
+    "ParentChannels.dc.html",
+    "ParentFamily.dc.html",
+    "ParentSettings.dc.html",
+    "Login.dc.html",
+    "NoAccess.dc.html"
+  ],
+  "pages": [],
+  "title": "채널담 — 화면 시안"
+}

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>재생</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2F5BEA}a:hover{color:#2347C5}
+.noscroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; color: #15171A; font-family: 'IBM Plex Sans KR', system-ui, sans-serif; overflow: hidden">
+
+  <header style="display: flex; align-items: center; gap: 4px; padding: 10px 8px">
+    <a href="Main.dc.html" aria-label="뒤로" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #15171A; border-radius: 12px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"></polyline></svg>
+    </a>
+    <span style="font-size: 16px; font-weight: 600">승인 채널 영상</span>
+  </header>
+
+  <div style="flex: none; width: 390px; height: 219px; background: #0F1114; color: #9AA1AD; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 14px">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"></rect><polygon points="10,9 15,12 10,15" fill="currentColor"></polygon></svg>
+    <span>YouTube 플레이어 영역</span>
+    <span style="font-size: 12px; color: #6E7582">임베드 · rel=0 · 위에 아무것도 덮지 않음</span>
+  </div>
+
+  <main class="noscroll" style="flex: 1; overflow-y: auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700; line-height: 1.4">{{title}}</h1>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 36px; height: 36px; border-radius: 999px; background: #DCE6FF; color: #2347C5; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700">과</div>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 16px; font-weight: 600">과학 실험실</span>
+          <span style="font-size: 14px; color: #5B6270">3시간 전</span>
+        </div>
+        <span style="margin-left: auto; padding: 3px 8px; border-radius: 999px; background: #E8EEFF; color: #2347C5; font-size: 12px; font-weight: 600">승인 채널</span>
+      </div>
+    </div>
+
+    <sc-if value="{{showError}}" hint-placeholder-val="{{false}}">
+      <div role="status" style="padding: 12px 14px; border-radius: 12px; background: #FDEDEA; color: #8A2414; font-size: 16px; line-height: 1.5">이 영상은 여기서 재생할 수 없어요. 목록으로 돌아가 다른 영상을 골라 주세요.</div>
+    </sc-if>
+
+    <section aria-labelledby="more" style="display: flex; flex-direction: column; gap: 12px">
+      <h2 id="more" style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4">이 채널의 다른 영상</h2>
+      <sc-for list="{{more}}" as="m" hint-placeholder-count="3">
+        <a href="KidPlayer.dc.html" style="display: flex; gap: 12px; text-decoration: none; color: #15171A; align-items: flex-start">
+          <div style="position: relative; flex: none; width: 140px; height: 79px; border-radius: 10px; background: #DCE6FF">
+            <span style="position: absolute; right: 6px; bottom: 6px; padding: 1px 5px; border-radius: 4px; background: rgba(21,23,26,0.8); color: #FFFFFF; font-size: 12px; font-weight: 600">{{m.dur}}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; padding-top: 2px">
+            <span style="font-size: 16px; font-weight: 600; line-height: 1.4">{{m.title}}</span>
+            <span style="font-size: 14px; line-height: 1.4; color: #5B6270">{{m.age}}</span>
+          </div>
+        </a>
+      </sc-for>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;playError&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;section&quot;:&quot;상태&quot;},&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      title: '집에서 만드는 화산 폭발 실험',
+      showError: this.props.playError ?? false,
+      more: [
+        { title: '자석은 왜 서로 밀어낼까?', age: '4일 전', dur: '9:51' },
+        { title: '공룡은 왜 멸종했을까? 5분 정리', age: '1주 전', dur: '5:12' },
+        { title: '얼음이 물에 뜨는 이유', age: '2주 전', dur: '7:03' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

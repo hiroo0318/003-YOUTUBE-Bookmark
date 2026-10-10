@@ -1,0 +1,18 @@
+# OS·편집기
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 비밀값 — 예시 파일만 올린다
+.env*
+!.env.example
+
+# 빌드·의존성 (web/.gitignore에도 있음)
+node_modules/
+.next/
+out/
+build/
+.vercel/
+*.tsbuildinfo
+*.log

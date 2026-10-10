@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>승인 대기함</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2F5BEA}a:hover{color:#2347C5}
+.noscroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F7F8FA; color: #15171A; font-family: 'IBM Plex Sans KR', system-ui, sans-serif; overflow: hidden">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 8px">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span aria-hidden="true" style="width: 30px; height: 30px; border-radius: 9px; background: #2F5BEA; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" stroke="none"><path d="M7 3h10a1.5 1.5 0 0 1 1.5 1.5V21l-6.5-4.2L5.5 21V4.5A1.5 1.5 0 0 1 7 3z"></path></svg></span>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; letter-spacing: -0.3px">채널담</h1>
+    </div>
+    <div style="width: 36px; height: 36px; border-radius: 999px; background: #15171A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600" aria-label="부모 프로필">엄</div>
+  </header>
+
+  <sc-if value="{{pushOff}}" hint-placeholder-val="{{false}}">
+    <a href="ParentSettings.dc.html" style="margin: 4px 20px 0; padding: 12px 14px; border-radius: 12px; background: #FFF1DB; color: #6E3C00; display: flex; gap: 10px; align-items: center; font-size: 15px; font-weight: 500; line-height: 1.45; text-decoration: none">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path><line x1="3" y1="3" x2="21" y2="21"></line></svg>
+      <span style="flex: 1">이 기기에서 알림이 꺼져 있어요. 요청을 바로 받으려면 설정에서 알림을 켜 주세요.</span>
+      <span style="font-weight: 700">설정</span>
+    </a>
+  </sc-if>
+
+  <main class="noscroll" style="flex: 1; overflow-y: auto; padding: 12px 20px 20px; display: flex; flex-direction: column; gap: 12px">
+    <sc-for list="{{pending}}" as="p" hint-placeholder-count="2">
+      <a href="ParentRequestDetail.dc.html" style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3E6EB; text-decoration: none; color: #15171A">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 1.4; color: #5B6270">
+          <span style="width: 24px; height: 24px; border-radius: 999px; background: #E8EEFF; color: #2347C5; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">{{p.kidInitial}}</span>
+          <span><b style="color: #15171A; font-weight: 600">{{p.kid}}</b>이 채널 추가를 요청했어요</span>
+          <span style="margin-left: auto">{{p.when}}</span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center">
+          <div style="flex: none; width: 112px; height: 63px; border-radius: 10px; background: {{p.tint}}"></div>
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+            <span style="font-size: 17px; font-weight: 700; line-height: 1.4">{{p.channel}}</span>
+            <span style="font-size: 14px; color: #5B6270; line-height: 1.4">계기 영상 · {{p.video}}</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: 600; color: #2347C5">
+          <span>{{p.extra}}</span>
+          <span style="display: flex; align-items: center; gap: 2px">확인하기 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"></polyline></svg></span>
+        </div>
+      </a>
+    </sc-for>
+
+    <h2 style="margin: 12px 0 0; font-size: 17px; font-weight: 700; line-height: 1.4; color: #15171A">최근 처리</h2>
+    <sc-for list="{{done}}" as="d" hint-placeholder-count="2">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E6EB">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
+          <span style="font-size: 16px; font-weight: 600; line-height: 1.4">{{d.channel}}</span>
+          <span style="font-size: 14px; line-height: 1.4; color: #5B6270">{{d.kid}} · {{d.when}}</span>
+        </div>
+        <sc-if value="{{d.approved}}" hint-placeholder-val="{{true}}">
+          <span style="padding: 3px 8px; border-radius: 999px; background: #E8EEFF; color: #2347C5; font-size: 12px; font-weight: 600">승인</span>
+        </sc-if>
+        <sc-if value="{{d.rejected}}" hint-placeholder-val="{{false}}">
+          <span style="padding: 3px 8px; border-radius: 999px; background: #EEF0F3; color: #4A505C; font-size: 12px; font-weight: 600">거절</span>
+        </sc-if>
+      </div>
+    </sc-for>
+  </main>
+
+  <nav aria-label="부모 메뉴" style="flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid #E3E6EB; background: #FFFFFF; padding: 6px 8px 18px">
+    <a href="ParentInbox.dc.html" aria-current="page" aria-label="대기함, 새 요청 2건" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #2F5BEA; font-size: 12px; font-weight: 600">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,12 16,12 14,15 10,15 8,12 2,12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+      <span style="position: absolute; top: 2px; left: 50%; margin-left: 8px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: #C2410C; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">2</span>
+      대기함
+    </a>
+    <a href="ParentChannels.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><polygon points="10,9 15,12 10,15" fill="currentColor"></polygon></svg>
+      채널 관리
+    </a>
+    <a href="ParentFamily.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M17 14a5 5 0 0 1 4.5 5"></path></svg>
+      가족
+    </a>
+    <a href="ParentSettings.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      설정
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;pushOff&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;section&quot;:&quot;상태&quot;},&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      pushOff: this.props.pushOff ?? false,
+      pending: [
+        { kid: '지민', kidInitial: '지', when: '12분 전', channel: '공룡 박물관 탐험', video: '티라노사우루스 실제 크기 비교', tint: '#E3EFD9', extra: '' },
+        { kid: '지민', kidInitial: '지', when: '어제', channel: '종이접기 공방', video: '종이 한 장으로 공룡 접기', tint: '#F3E3EA', extra: '같은 채널 요청 2번' }
+      ],
+      done: [
+        { channel: '과학 실험실', kid: '지민', when: '3일 전', approved: true, rejected: false },
+        { channel: '게임 하이라이트 TV', kid: '지민', when: '5일 전', approved: false, rejected: true }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

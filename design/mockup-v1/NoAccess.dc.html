@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>접근 불가</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2F5BEA}a:hover{color:#2347C5}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; color: #15171A; font-family: 'IBM Plex Sans KR', system-ui, sans-serif; overflow: hidden; padding: 0 24px">
+
+  <header style="display: flex; align-items: center; gap: 8px; padding: 20px 0 8px">
+    <span aria-hidden="true" style="width: 30px; height: 30px; border-radius: 9px; background: #2F5BEA; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" stroke="none"><path d="M7 3h10a1.5 1.5 0 0 1 1.5 1.5V21l-6.5-4.2L5.5 21V4.5A1.5 1.5 0 0 1 7 3z"></path></svg></span>
+    <span style="font-size: 20px; font-weight: 700; line-height: 1.3; letter-spacing: -0.3px">채널담</span>
+  </header>
+
+  <main style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; text-align: center">
+    <span aria-hidden="true" style="width: 64px; height: 64px; border-radius: 999px; background: #FFF1DB; color: #8A4B00; display: flex; align-items: center; justify-content: center">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+    </span>
+    <sc-if value="{{notRegistered}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <h1 style="margin: 0; font-size: 20px; font-weight: 700; line-height: 1.4">가족으로 등록된 계정이 아니에요</h1>
+        <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #33383F">[로그인한 Google 이메일] 계정은 이 가족에 등록되어 있지 않아요. 부모님께 이 이메일을 등록해 달라고 말해 주세요.</p>
+      </div>
+    </sc-if>
+    <sc-if value="{{noProfile}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <h1 style="margin: 0; font-size: 20px; font-weight: 700; line-height: 1.4">아직 내 프로필이 없어요</h1>
+        <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #33383F">가족에는 등록됐지만 프로필이 연결되지 않았어요. 부모님께 프로필 연결을 부탁해 주세요.</p>
+      </div>
+    </sc-if>
+  </main>
+
+  <div style="flex: none; display: flex; flex-direction: column; gap: 10px; padding-bottom: 40px">
+    <a href="Login.dc.html" style="height: 52px; border-radius: 12px; background: #15171A; color: #FFFFFF; font-size: 16px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">다른 계정으로 로그인</a>
+    <a href="Login.dc.html" style="height: 52px; border-radius: 12px; border: 1px solid #E3E6EB; color: #15171A; font-size: 16px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">로그아웃</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"reason":{"editor":"enum","options":["notRegistered","noProfile"],"default":"notRegistered","section":"상태"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const r = this.props.reason ?? 'notRegistered';
+    return { notRegistered: r === 'notRegistered', noProfile: r === 'noProfile' };
+  }
+}
+</script>
+</body>
+</html>

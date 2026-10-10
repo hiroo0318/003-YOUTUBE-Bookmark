@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>승인 채널 영상</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2F5BEA}a:hover{color:#2347C5}
+input::placeholder{color:#7A8190}
+.noscroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F7F8FA; color: #15171A; font-family: 'IBM Plex Sans KR', system-ui, sans-serif; overflow: hidden">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 8px">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span aria-hidden="true" style="width: 30px; height: 30px; border-radius: 9px; background: #2F5BEA; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" stroke="none"><path d="M7 3h10a1.5 1.5 0 0 1 1.5 1.5V21l-6.5-4.2L5.5 21V4.5A1.5 1.5 0 0 1 7 3z"></path></svg></span>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; letter-spacing: -0.3px">채널담</h1>
+    </div>
+    <div style="width: 36px; height: 36px; border-radius: 999px; background: #E8EEFF; color: #2347C5; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600" aria-label="지민 프로필">지</div>
+  </header>
+
+  <div style="margin: 4px 20px 0; padding: 10px 12px; border-radius: 12px; background: #EEF2FF; color: #2A3F8F; display: flex; gap: 8px; align-items: flex-start; font-size: 15px; font-weight: 500; line-height: 1.45">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 2px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="11" x2="12" y2="16"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+    <span>부모님이 고른 채널만 재생돼요. YouTube의 제한이 아니라 우리 가족 설정이에요.</span>
+  </div>
+
+  <div style="margin: 14px 20px 0; position: relative">
+    <label for="q" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">승인 채널에서 찾기</label>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6270" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 14px; top: 15px"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input id="q" type="search" value="{{query}}" onChange="{{onQuery}}" placeholder="승인 채널에서 찾기" style="width: 100%; box-sizing: border-box; height: 48px; padding: 0 14px 0 40px; border-radius: 12px; border: 1px solid #E3E6EB; background: #FFFFFF; font-family: inherit; font-size: 16px; color: #15171A; outline: none">
+  </div>
+
+  <div class="noscroll" style="display: flex; gap: 8px; padding: 12px 20px 4px; overflow-x: auto; flex: none">
+    <sc-for list="{{chips}}" as="c" hint-placeholder-count="5">
+      <sc-if value="{{c.selected}}" hint-placeholder-val="{{false}}">
+        <button type="button" onClick="{{c.pick}}" style="flex: none; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid #15171A; background: #15171A; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer">{{c.name}}</button>
+      </sc-if>
+      <sc-if value="{{c.unselected}}" hint-placeholder-val="{{true}}">
+        <button type="button" onClick="{{c.pick}}" style="flex: none; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid #E3E6EB; background: #FFFFFF; color: #15171A; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer">{{c.name}}</button>
+      </sc-if>
+    </sc-for>
+  </div>
+
+  <p style="margin: 6px 20px 4px; font-size: 14px; line-height: 1.4; color: #5B6270">마지막 갱신 오늘 14:20 · 아래로 당기면 새로고침</p>
+
+  <main class="noscroll" style="flex: 1; overflow-y: auto; padding: 4px 20px 16px; display: flex; flex-direction: column; gap: 14px">
+    <sc-for list="{{videos}}" as="v" hint-placeholder-count="4">
+      <a href="KidPlayer.dc.html" style="display: flex; gap: 12px; text-decoration: none; color: #15171A; align-items: flex-start">
+        <div style="position: relative; flex: none; width: 140px; height: 79px; border-radius: 10px; background: {{v.tint}}; display: flex; align-items: center; justify-content: center">
+          <span style="width: 34px; height: 34px; border-radius: 999px; background: rgba(21,23,26,0.72); display: flex; align-items: center; justify-content: center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFFFFF" stroke="none"><polygon points="7,4 20,12 7,20"></polygon></svg>
+          </span>
+          <span style="position: absolute; right: 6px; bottom: 6px; padding: 1px 5px; border-radius: 4px; background: rgba(21,23,26,0.8); color: #FFFFFF; font-size: 12px; font-weight: 600">{{v.dur}}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; padding-top: 2px">
+          <span style="font-size: 16px; font-weight: 600; line-height: 1.4">{{v.title}}</span>
+          <span style="font-size: 14px; line-height: 1.4; color: #5B6270">{{v.chName}} · {{v.age}}</span>
+        </div>
+      </a>
+    </sc-for>
+    <sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+      <div style="padding: 48px 12px; text-align: center; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 17px; font-weight: 600; line-height: 1.4">최근 영상에서 찾지 못했어요</span>
+        <span style="font-size: 14px; color: #5B6270; line-height: 1.4">승인 채널마다 최근 50개 영상에서 찾아요.</span>
+        <sc-if value="{{oneChannel}}" hint-placeholder-val="{{false}}">
+          <button type="button" style="margin: 10px auto 0; height: 48px; padding: 0 18px; border-radius: 12px; border: 1px solid #C9D3F5; background: #FFFFFF; color: #2347C5; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer">YouTube에서 이 채널 더 찾기</button>
+        </sc-if>
+      </div>
+    </sc-if>
+  </main>
+
+  <nav aria-label="아이 메뉴" style="flex: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid #E3E6EB; background: #FFFFFF; padding: 6px 8px 18px">
+    <a href="Main.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #2F5BEA; font-size: 12px; font-weight: 600">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><polygon points="10,9 15,12 10,15" fill="currentColor"></polygon></svg>
+      승인 채널 영상
+    </a>
+    <a href="KidSearch.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      검색
+    </a>
+    <a href="KidMyRequests.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>
+      <span style="position: absolute; top: 2px; left: 50%; margin-left: 8px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: #C2410C; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">1</span>
+      내 요청
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { chip: 'all', query: '' };
+  }
+  renderVals() {
+    const chips = [
+      { id: 'all', name: '전체' },
+      { id: 'math', name: '수학 쉽게 쌤' },
+      { id: 'sci', name: '과학 실험실' },
+      { id: 'draw', name: '그림 그리는 하루' },
+      { id: 'eng', name: '영어 한 문장' }
+    ];
+    const all = [
+      { ch: 'sci', chName: '과학 실험실', title: '집에서 만드는 화산 폭발 실험', age: '3시간 전', dur: '8:42', tint: '#DCE6FF' },
+      { ch: 'math', chName: '수학 쉽게 쌤', title: '일차방정식, 이 순서로만 풀면 끝', age: '어제', dur: '12:05', tint: '#DDF0E4' },
+      { ch: 'draw', chName: '그림 그리는 하루', title: '연필 하나로 고양이 그리기', age: '2일 전', dur: '15:30', tint: '#FBE8D7' },
+      { ch: 'eng', chName: '영어 한 문장', title: '하루 한 문장: 길 묻기 표현', age: '3일 전', dur: '4:18', tint: '#ECE3FA' },
+      { ch: 'sci', chName: '과학 실험실', title: '자석은 왜 서로 밀어낼까?', age: '4일 전', dur: '9:51', tint: '#DCE6FF' },
+      { ch: 'math', chName: '수학 쉽게 쌤', title: '분수 나눗셈 그림으로 이해하기', age: '1주 전', dur: '10:27', tint: '#DDF0E4' }
+    ];
+    const q = (this.state.query || '').trim();
+    const chip = this.state.chip;
+    const videos = all.filter((v) => (chip === 'all' || v.ch === chip) && (!q || v.title.includes(q) || v.chName.includes(q)));
+    return {
+      query: this.state.query,
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      chips: chips.map((c) => ({
+        ...c,
+        selected: c.id === chip,
+        unselected: c.id !== chip,
+        pick: () => this.setState({ chip: c.id })
+      })),
+      videos,
+      empty: videos.length === 0,
+      oneChannel: chip !== 'all'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>설정</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2F5BEA}a:hover{color:#2347C5}
+.noscroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F7F8FA; color: #15171A; font-family: 'IBM Plex Sans KR', system-ui, sans-serif; overflow: hidden">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 8px">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span aria-hidden="true" style="width: 30px; height: 30px; border-radius: 9px; background: #2F5BEA; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" stroke="none"><path d="M7 3h10a1.5 1.5 0 0 1 1.5 1.5V21l-6.5-4.2L5.5 21V4.5A1.5 1.5 0 0 1 7 3z"></path></svg></span>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; letter-spacing: -0.3px">채널담</h1>
+    </div>
+    <div style="width: 36px; height: 36px; border-radius: 999px; background: #15171A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600" aria-label="부모 프로필">엄</div>
+  </header>
+
+  <main class="noscroll" style="flex: 1; overflow-y: auto; padding: 8px 20px 24px; display: flex; flex-direction: column; gap: 20px">
+
+    <section aria-labelledby="mode" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 id="mode" style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4">아이별 승인 모드</h2>
+      <div style="border-radius: 16px; background: #FFFFFF; border: 1px solid #E3E6EB; overflow: hidden">
+        <sc-for list="{{kids}}" as="k" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border-bottom: 1px solid #EEF0F3">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0">
+                <span style="font-size: 16px; font-weight: 600; line-height: 1.4">{{k.name}}</span>
+                <span style="font-size: 14px; line-height: 1.4; color: #5B6270">{{k.desc}}</span>
+              </div>
+              <sc-if value="{{k.on}}" hint-placeholder-val="{{true}}">
+                <button type="button" role="switch" aria-checked="true" aria-label="{{k.name}} 승인 모드" onClick="{{k.toggle}}" style="flex: none; width: 52px; height: 32px; padding: 3px; box-sizing: border-box; border-radius: 999px; border: none; background: #2F5BEA; display: flex; justify-content: flex-end; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 999px; background: #FFFFFF"></span></button>
+              </sc-if>
+              <sc-if value="{{k.off}}" hint-placeholder-val="{{false}}">
+                <button type="button" role="switch" aria-checked="false" aria-label="{{k.name}} 승인 모드" onClick="{{k.toggle}}" style="flex: none; width: 52px; height: 32px; padding: 3px; box-sizing: border-box; border-radius: 999px; border: none; background: #C9CED6; display: flex; justify-content: flex-start; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 999px; background: #FFFFFF"></span></button>
+              </sc-if>
+            </div>
+            <sc-if value="{{k.off}}" hint-placeholder-val="{{false}}">
+              <span style="font-size: 14px; line-height: 1.5; color: #8A4B00">검색한 영상을 승인 없이 바로 볼 수 있어요. 다시 켜면 기존 승인·거절 목록을 그대로 써요.</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section aria-labelledby="noti" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 id="noti" style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4">알림</h2>
+      <div style="padding: 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3E6EB; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 16px; font-weight: 600; line-height: 1.4">이 기기의 요청 알림</span>
+            <span style="font-size: 14px; line-height: 1.4; color: #5B6270">아이가 채널을 요청하면 알려 드려요</span>
+          </div>
+          <span style="flex: none; padding: 3px 8px; border-radius: 999px; background: #EAF6EE; color: #1E5B34; font-size: 12px; font-weight: 600">켜짐</span>
+        </div>
+        <button type="button" style="height: 44px; border-radius: 12px; border: 1px solid #E3E6EB; background: #FFFFFF; color: #15171A; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer">테스트 알림 보내기</button>
+        <div style="padding: 12px; border-radius: 12px; background: #F7F8FA; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 14px; font-weight: 600">iPhone에서 알림 받는 방법</span>
+          <span style="font-size: 14px; line-height: 1.5; color: #33383F">Safari 공유 버튼 → 홈 화면에 추가 → 홈 화면의 채널담을 열고 알림 허용 (iOS 16.4 이상)</span>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="use" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 id="use" style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4">오늘 검색 사용량</h2>
+      <div style="padding: 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3E6EB; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 600"><span>가족 전체</span><span>[사용] / 100회</span></div>
+        <div style="height: 8px; border-radius: 999px; background: #EBEEF2; overflow: hidden"><div style="width: 37%; height: 8px; background: #2F5BEA"></div></div>
+        <span style="font-size: 14px; line-height: 1.5; color: #5B6270">YouTube 검색은 가족 전체가 하루 100회를 나눠 써요. 승인 채널 영상 탭의 검색은 횟수를 쓰지 않아요.</span>
+      </div>
+    </section>
+
+    <section aria-labelledby="acc" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 id="acc" style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4">계정</h2>
+      <div style="padding: 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3E6EB; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 16px; font-weight: 600; line-height: 1.4">엄마 · 부모</span>
+          <span style="font-size: 14px; line-height: 1.4; color: #5B6270">[로그인한 Google 이메일]</span>
+        </div>
+        <a href="Login.dc.html" style="flex: none; height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #E3E6EB; color: #15171A; font-size: 15px; font-weight: 600; text-decoration: none; display: flex; align-items: center">로그아웃</a>
+      </div>
+    </section>
+  </main>
+
+  <nav aria-label="부모 메뉴" style="flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid #E3E6EB; background: #FFFFFF; padding: 6px 8px 18px">
+    <a href="ParentInbox.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,12 16,12 14,15 10,15 8,12 2,12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+      <span style="position: absolute; top: 2px; left: 50%; margin-left: 8px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: #C2410C; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">2</span>
+      대기함
+    </a>
+    <a href="ParentChannels.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><polygon points="10,9 15,12 10,15" fill="currentColor"></polygon></svg>
+      채널 관리
+    </a>
+    <a href="ParentFamily.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5B6270; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M17 14a5 5 0 0 1 4.5 5"></path></svg>
+      가족
+    </a>
+    <a href="ParentSettings.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #2F5BEA; font-size: 12px; font-weight: 600">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg>
+      설정
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { jimin: true, seojun: false };
+  }
+  renderVals() {
+    const kids = [{ id: 'jimin', name: '지민' }, { id: 'seojun', name: '서준' }];
+    return {
+      kids: kids.map((k) => {
+        const on = this.state[k.id];
+        return {
+          ...k,
+          on,
+          off: !on,
+          desc: on ? '켜짐 · 승인한 채널만 재생' : '꺼짐 · 검색한 영상 바로 재생',
+          toggle: () => this.setState({ [k.id]: !on })
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
