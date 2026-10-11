@@ -124,6 +124,22 @@ export function splitPlaylistIds(channelId: string) {
   return { videos: `UULF${rest}`, shorts: `UUSH${rest}` };
 }
 
+// 채널 화면용: 최근 일반 영상 최대 50개(쇼츠·재생 불가 제외). 일반 할당량 약 2단위, 저장하지 않는다.
+export async function getChannelRecentVideos(channelId: string, uploadsPlaylistId: string | null) {
+  const split = splitPlaylistIds(channelId);
+  let ids: string[] = [];
+  if (split) {
+    try {
+      ids = (await getPlaylistPage(split.videos)).ids;
+    } catch (e) {
+      if (e instanceof QuotaExceededError) throw e;
+    }
+  }
+  if (ids.length === 0 && uploadsPlaylistId) ids = (await getPlaylistPage(uploadsPlaylistId)).ids;
+  const details = await getVideos(ids);
+  return details.filter((d) => d.playable && !d.isShortGuess);
+}
+
 export type VideoDetail = {
   videoId: string;
   channelId: string;

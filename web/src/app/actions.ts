@@ -39,6 +39,25 @@ export async function searchAction(
   }
 }
 
+// 채널 이름으로 찾기(검색 탭의 '채널' 모드). 검색 한도 1회.
+export type ChannelResultItem = SearchChannel & { status: ChannelStatus };
+
+export async function searchChannelsKidAction(q: string): Promise<{ ok: true; items: ChannelResultItem[]; remaining?: number } | Fail> {
+  const me = await requireMe("child");
+  const query = q.trim();
+  if (!query) return { ok: true, items: [] };
+  try {
+    const found = await searchChannels(query);
+    const remaining = await addSearchUsage();
+    const statuses = await getChannelStatusMap(me.profileId!, found.map((c) => c.channelId));
+    return { ok: true, remaining, items: found.map((c) => ({ ...c, status: statuses.get(c.channelId) ?? "none" })) };
+  } catch (e) {
+    if (e instanceof QuotaExceededError) return { ok: false, error: QUOTA_MSG, remaining: 0 };
+    console.error(e);
+    return { ok: false, error: "검색하지 못했어요. 잠시 후 다시 시도해 주세요." };
+  }
+}
+
 // 승인 채널 안에서 YouTube 검색(채널 하나를 골랐을 때만, 검색 한도 1회)
 export async function searchInChannelAction(channelId: string, q: string) {
   const me = await requireMe("child");

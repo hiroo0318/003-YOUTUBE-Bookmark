@@ -14,7 +14,7 @@ export default async function WatchPage({ params, searchParams }: PageProps<"/ki
   const me = await requireMe("child");
   const { videoId } = await params;
   const { autoplay, from, channel: pushChannel } = await searchParams;
-  const back = from === "search" ? { href: "/kid/search", label: "검색" } : { href: "/kid", label: "승인 채널 영상" };
+  const back = from === "search" || from === "channel" ? { href: "/kid/search", label: "검색" } : { href: "/kid", label: "승인 채널 영상" };
 
   await ensureVideos([videoId]).catch(() => undefined);
   // 채널 확인 전이라 서버 권한으로 읽고, 아래에서 승인 여부를 직접 확인한다.
