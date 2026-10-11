@@ -83,7 +83,7 @@
 - 위치: `web/` (Next.js 16.4 App Router, React 19.3, Tailwind 4, @supabase/ssr). DB 마이그레이션은 `web/supabase/migrations/`.
 - 1차 구현 범위: Google 로그인·최초 부모 생성·가족 연결, 아이(승인 채널 영상+즉시 검색, YouTube 검색·채널 추가 요청, 재생, 내 요청), 부모(대기함, 요청 상세 승인·거절, 채널 관리·직접 승인, 가족 관리, 설정: 아이별 승인 모드·검색 사용량), 재생 가능 판정·6시간 갱신·30일 캐시 정리.
 - 저장소: 프로젝트 루트 전체를 하나의 git 저장소로 관리한다(2026-10-10 초기 커밋, 브랜치 `main`). GitHub: https://github.com/hiroo0318/003-YOUTUBE-Bookmark (2026-10-10 연결·푸시 완료). GitHub 연결·Vercel 배포는 사용자가 진행하며, Vercel Root Directory는 `web`, 환경변수 8개(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `YOUTUBE_API_KEY`, `FIRST_PARENT_EMAIL`, `CRON_SECRET`, 웹 푸시용 `NEXT_PUBLIC_VAPID_PUBLIC_KEY`·`VAPID_PRIVATE_KEY`, 선택 `VAPID_SUBJECT`)와 Supabase Redirect URLs에 배포 주소 추가가 필요하다.
-- 웹 푸시(2026-10-11 구현): `public/sw.js`(알림 표시·클릭 이동), `src/lib/push.ts`(web-push 발송, 만료 구독 정리), `src/components/push-settings.tsx`(부모 설정·아이 내 요청의 알림 켜기/끄기/테스트). VAPID 키를 `.env.local`과 Vercel에 넣어야 동작한다. 실기기 검증(V18) 남음.
+- 웹 푸시(2026-10-11 구현): `public/sw.js`(알림 표시·클릭 이동), `src/lib/push.ts`(web-push 발송, 만료 구독 정리), `src/components/push-settings.tsx`(부모 설정·아이 내 요청의 알림 켜기/끄기/테스트). VAPID 키를 `.env.local`과 Vercel에 넣어 동작한다. 2026-10-11 확인: PC Chrome(로컬) 테스트·요청 알림 수신, iPhone 홈 화면 앱(부모) 요청 알림 수신과 승인 처리. 남은 실기기 검증: 아이 기기의 결과 알림·승인 알림 눌러 영상 열기, Android.
 
 ## 후속 검토 항목 — 2026-10-10
 
