@@ -5,7 +5,7 @@ import { ProfileMenu } from "@/components/profile-menu";
 // 1뎁스 타이틀바: 로고 + 채널담 + 프로필
 export function BrandHeader({ name, email, variant = "child" }: { name: string; email: string; variant?: "child" | "parent" }) {
   return (
-    <header className="flex items-center justify-between px-5 pb-2 pt-5">
+    <header className="flex flex-none items-center justify-between px-5 pb-2 pt-5">
       <div className="flex items-center gap-2">
         <span className="flex size-[30px] items-center justify-center rounded-[9px] bg-accent">
           <BrandMark />
@@ -20,7 +20,7 @@ export function BrandHeader({ name, email, variant = "child" }: { name: string; 
 // 2뎁스 이상 타이틀바: 뒤로 + 이전 메뉴명
 export function BackHeader({ href, label }: { href: string; label: string }) {
   return (
-    <header className="flex items-center gap-1 px-2 py-2.5">
+    <header className="flex flex-none items-center gap-1 px-2 py-2.5">
       <Link href={href} aria-label="뒤로" className="flex size-11 items-center justify-center rounded-xl text-ink">
         <IconBack />
       </Link>
@@ -37,7 +37,7 @@ const BANNER_COPY = {
 
 export function ModeBanner({ approvalMode, tab }: { approvalMode: boolean; tab: "feed" | "search" }) {
   return (
-    <p className="mx-5 mt-0.5 flex items-center gap-1 text-label leading-[1.4] text-sub">
+    <p className="mx-5 mt-0.5 flex flex-none items-center gap-1 text-label leading-[1.4] text-sub">
       <IconInfo size={13} />
       <span>{BANNER_COPY[tab][approvalMode ? "on" : "off"]}</span>
     </p>

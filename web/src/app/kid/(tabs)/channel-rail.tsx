@@ -75,8 +75,8 @@ export function ChannelRail({
             aria-labelledby="allCh"
             className="relative flex max-h-[75dvh] flex-col gap-3 rounded-t-[20px] bg-surface px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-2.5"
           >
-            <div className="h-1 w-10 self-center rounded-full bg-[#d5d9e0]" />
-            <div className="flex items-center justify-between px-1">
+            <div className="h-1 w-10 flex-none self-center rounded-full bg-[#d5d9e0]" />
+            <div className="flex flex-none items-center justify-between px-1">
               <h2 id="allCh" className="text-subhead font-bold">
                 승인 채널 {channels.length}개
               </h2>
@@ -84,7 +84,7 @@ export function ChannelRail({
                 닫기
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-x-1 gap-y-3 overflow-y-auto pb-2">
+            <div className="grid min-h-0 grid-cols-4 gap-x-1 gap-y-3 overflow-y-auto pb-2">
               {channels.map((c) => (
                 <ChannelButton
                   key={c.channelId}

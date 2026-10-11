@@ -56,8 +56,10 @@ export function ScrollArea({ children, className = "", resetKey }: { children: R
   }, [storeKey]);
 
   return (
-    <main ref={ref} className={`min-h-0 flex-1 overflow-y-auto overscroll-contain ${className}`}>
-      {children}
+    // 스크롤 영역(main) 자체를 flex 목록으로 쓰면, 내용이 영역보다 길 때 h-12 같은 고정 높이 버튼이 눌려 줄어든다.
+    // 그래서 목록 배치(className)는 안쪽 div에 주고, 바깥은 높이 제한·스크롤만 맡는다.
+    <main ref={ref} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      <div className={className}>{children}</div>
     </main>
   );
 }

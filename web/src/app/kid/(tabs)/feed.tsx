@@ -100,7 +100,7 @@ export function Feed({
               setMore(null);
             }}
             placeholder="승인 채널에서 찾기"
-            className="h-12 w-full rounded-xl border border-line bg-surface pl-10 pr-3.5 text-control outline-none focus:border-accent"
+            className="appearance-none h-12 w-full rounded-xl border border-line bg-surface pl-10 pr-3.5 text-control outline-none focus:border-accent"
           />
         </div>
 

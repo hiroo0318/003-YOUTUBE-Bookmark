@@ -175,7 +175,7 @@ export function SearchClient({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder={mode === "channel" ? "채널 이름으로 찾아보세요" : "보고 싶은 영상을 찾아보세요"}
-            className="h-12 min-w-0 flex-1 rounded-xl border border-line bg-surface px-3.5 text-control outline-none focus:border-accent"
+            className="appearance-none h-12 min-w-0 flex-1 rounded-xl border border-line bg-surface px-3.5 text-control outline-none focus:border-accent"
           />
           <button type="submit" disabled={pending} className="h-12 flex-none rounded-xl bg-accent px-5 text-control font-semibold text-white disabled:opacity-60">
             검색
