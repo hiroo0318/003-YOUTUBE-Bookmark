@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { channelStatusesAction, requestChannelAction, searchAction, type SearchResultItem } from "@/app/actions";
 import { IconClock, IconPlus } from "@/components/icons";
+import { ScrollArea } from "@/components/scroll-area";
 import { ChannelAvatar, RowTag, Thumb, VideoRowBody } from "@/components/video";
 
 // 검색 결과는 프로필별로 이 탭(sessionStorage)에만 보관한다. 승인 상태는 복원할 때 다시 조회한다.
@@ -91,33 +92,35 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
 
   return (
     <>
-      <form onSubmit={submit} className="mx-5 mt-3.5 flex gap-2">
-        <label htmlFor="sq" className="sr-only">
-          YouTube 검색어
-        </label>
-        <input
-          id="sq"
-          type="search"
-          enterKeyHint="search"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder="보고 싶은 영상을 찾아보세요"
-          className="h-12 min-w-0 flex-1 rounded-xl border border-line bg-surface px-3.5 text-control outline-none focus:border-accent"
-        />
-        <button type="submit" disabled={pending} className="h-12 flex-none rounded-xl bg-accent px-5 text-control font-semibold text-white disabled:opacity-60">
-          검색
-        </button>
-      </form>
+      <div className="flex-none">
+        <form onSubmit={submit} className="mx-5 mt-3.5 flex gap-2">
+          <label htmlFor="sq" className="sr-only">
+            YouTube 검색어
+          </label>
+          <input
+            id="sq"
+            type="search"
+            enterKeyHint="search"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="보고 싶은 영상을 찾아보세요"
+            className="h-12 min-w-0 flex-1 rounded-xl border border-line bg-surface px-3.5 text-control outline-none focus:border-accent"
+          />
+          <button type="submit" disabled={pending} className="h-12 flex-none rounded-xl bg-accent px-5 text-control font-semibold text-white disabled:opacity-60">
+            검색
+          </button>
+        </form>
 
-      {error ? (
-        <p role="alert" className="mx-5 mt-3 rounded-xl bg-danger-bg px-3.5 py-3 text-caption text-danger-ink">
-          {error}
-        </p>
-      ) : null}
+        {error ? (
+          <p role="alert" className="mx-5 mt-3 rounded-xl bg-danger-bg px-3.5 py-3 text-caption text-danger-ink">
+            {error}
+          </p>
+        ) : null}
 
-      {query ? <p className="mx-5 mb-1.5 mt-3.5 text-caption text-sub">‘{query}’ 검색 결과</p> : null}
+        {query ? <p className="mx-5 mb-1.5 mt-3.5 text-caption text-sub">‘{query}’ 검색 결과</p> : null}
+      </div>
 
-      <main className="flex flex-1 flex-col gap-4 px-5 pb-4 pt-1">
+      <ScrollArea resetKey={query} className="flex flex-col gap-4 px-5 pb-4 pt-1">
         {pending && items.length === 0 ? <p className="py-10 text-center text-caption text-sub">찾는 중…</p> : null}
         {items.map((r) => {
           const playable = !approvalMode || r.status === "approved";
@@ -183,7 +186,7 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
             {pending ? "불러오는 중…" : "결과 더 보기"}
           </button>
         ) : null}
-      </main>
+      </ScrollArea>
 
       {sheet ? <RequestSheet item={sheet} onClose={() => setSheet(null)} onSent={() => markPending(sheet.channelId)} /> : null}
     </>

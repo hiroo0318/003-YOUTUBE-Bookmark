@@ -5,6 +5,7 @@ import { useMemo, useState, useTransition } from "react";
 import { loadOlderAction, refreshFeedAction, searchInChannelAction, toggleLikeAction } from "@/app/actions";
 import { IconSearch } from "@/components/icons";
 import { LikeToggle } from "@/components/like-button";
+import { ScrollArea } from "@/components/scroll-area";
 import { RowTag, Thumb, VideoRowBody } from "@/components/video";
 import { ChannelRail } from "./channel-rail";
 import type { ChannelLite, FeedVideo } from "@/lib/data";
@@ -78,70 +79,72 @@ export function Feed({
 
   return (
     <>
-      <div className="relative mx-5 mt-3.5">
-        <label htmlFor="q" className="sr-only">
-          승인 채널에서 찾기
-        </label>
-        <span className="pointer-events-none absolute left-3.5 top-[15px] text-sub">
-          <IconSearch size={18} />
-        </span>
-        <input
-          id="q"
-          type="search"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
+      <div className="flex-none">
+        <div className="relative mx-5 mt-3.5">
+          <label htmlFor="q" className="sr-only">
+            승인 채널에서 찾기
+          </label>
+          <span className="pointer-events-none absolute left-3.5 top-[15px] text-sub">
+            <IconSearch size={18} />
+          </span>
+          <input
+            id="q"
+            type="search"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setMore(null);
+            }}
+            placeholder="승인 채널에서 찾기"
+            className="h-12 w-full rounded-xl border border-line bg-surface pl-10 pr-3.5 text-control outline-none focus:border-accent"
+          />
+        </div>
+
+        <ChannelRail
+          channels={channels}
+          selected={chip}
+          onToggle={(id) => {
+            setChip((cur) => (cur === id ? "all" : id));
             setMore(null);
           }}
-          placeholder="승인 채널에서 찾기"
-          className="h-12 w-full rounded-xl border border-line bg-surface pl-10 pr-3.5 text-control outline-none focus:border-accent"
         />
-      </div>
 
-      <ChannelRail
-        channels={channels}
-        selected={chip}
-        onToggle={(id) => {
-          setChip((cur) => (cur === id ? "all" : id));
-          setMore(null);
-        }}
-      />
+        <div role="tablist" aria-label="영상 종류" className="mx-5 mt-2 grid grid-cols-2 rounded-xl bg-track p-1">
+          {(
+            [
+              ["video", "영상"],
+              ["short", "쇼츠"],
+            ] as const
+          ).map(([k, label]) => (
+            <button
+              key={k}
+              type="button"
+              role="tab"
+              aria-selected={kind === k}
+              onClick={() => setKind(k)}
+              className={`h-9 rounded-[9px] text-body ${
+                kind === k ? "bg-surface font-semibold text-ink shadow-[0_1px_2px_rgba(21,23,26,0.08)]" : "font-medium text-sub"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
-      <div role="tablist" aria-label="영상 종류" className="mx-5 mt-2 grid grid-cols-2 rounded-xl bg-track p-1">
-        {(
-          [
-            ["video", "영상"],
-            ["short", "쇼츠"],
-          ] as const
-        ).map(([k, label]) => (
+        <div className="flex items-center justify-between px-5 pb-1 pt-1.5 text-caption text-sub">
+          <span>{lastFetchedAt ? `마지막 갱신 ${clockTime(lastFetchedAt)}` : "영상을 불러오는 중이에요"}</span>
           <button
-            key={k}
             type="button"
-            role="tab"
-            aria-selected={kind === k}
-            onClick={() => setKind(k)}
-            className={`h-9 rounded-[9px] text-body ${
-              kind === k ? "bg-surface font-semibold text-ink shadow-[0_1px_2px_rgba(21,23,26,0.08)]" : "font-medium text-sub"
-            }`}
+            disabled={refreshing}
+            onClick={() => startRefresh(() => refreshFeedAction())}
+            className="h-9 rounded-lg px-2 font-semibold text-accent-strong disabled:opacity-50"
           >
-            {label}
+            {refreshing ? "가져오는 중…" : "새 영상 가져오기"}
           </button>
-        ))}
+        </div>
       </div>
 
-      <div className="flex items-center justify-between px-5 pb-1 pt-1.5 text-caption text-sub">
-        <span>{lastFetchedAt ? `마지막 갱신 ${clockTime(lastFetchedAt)}` : "영상을 불러오는 중이에요"}</span>
-        <button
-          type="button"
-          disabled={refreshing}
-          onClick={() => startRefresh(() => refreshFeedAction())}
-          className="h-9 rounded-lg px-2 font-semibold text-accent-strong disabled:opacity-50"
-        >
-          {refreshing ? "가져오는 중…" : "새 영상 가져오기"}
-        </button>
-      </div>
-
-      <main className="flex flex-1 flex-col gap-3.5 px-5 pb-4 pt-1">
+      <ScrollArea resetKey={`${chip}-${kind}`} className="flex flex-col gap-3.5 px-5 pb-4 pt-1">
         {likeError ? <p className="text-caption text-danger-ink">{likeError}</p> : null}
         {kind === "video"
           ? longs.map((v) => (
@@ -244,7 +247,7 @@ export function Feed({
             ))}
           </section>
         ) : null}
-      </main>
+      </ScrollArea>
     </>
   );
 }

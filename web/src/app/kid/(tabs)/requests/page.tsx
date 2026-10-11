@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BrandHeader } from "@/components/chrome";
 import { IconChevron, IconClock } from "@/components/icons";
 import { PushSettings } from "@/components/push-settings";
+import { ScrollArea } from "@/components/scroll-area";
 import { ChannelAvatar } from "@/components/video";
 import { requireMe } from "@/lib/auth";
 import { getChannelLites } from "@/lib/data";
@@ -24,7 +25,7 @@ export default async function KidRequestsPage() {
   return (
     <>
       <BrandHeader name={me.displayName} email={me.email} />
-      <main className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-2">
+      <ScrollArea className="flex flex-col gap-3 px-5 pb-5 pt-2">
         <div className="mt-2">
           <PushSettings role="child" />
         </div>
@@ -78,7 +79,7 @@ export default async function KidRequestsPage() {
             </div>
           );
         })}
-      </main>
+      </ScrollArea>
     </>
   );
 }
