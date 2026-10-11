@@ -11,7 +11,8 @@ export function ScrollArea({ children, className = "", resetKey }: { children: R
   const path = usePathname();
   const storeKey = `chdam.scroll.${path}${resetKey ? `.${resetKey}` : ""}`;
 
-  // 저장된 위치로 되돌린다. 목록이 늦게 채워질 수 있어(검색 결과 복원 등) 1초 동안 높이가 충분해질 때까지 다시 시도한다.
+  // 저장된 위치로 되돌린다. 목록이 늦게 채워지거나(검색 결과 복원) 나눠 그려지므로(채널 영상 탭),
+  // 높이가 모자라면 끝까지 내려 다음 카드를 그리게 하면서 2초 동안 다시 시도한다.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -23,13 +24,14 @@ export function ScrollArea({ children, className = "", resetKey }: { children: R
       el.scrollTop = 0;
       return;
     }
-    const until = Date.now() + 1000;
+    const until = Date.now() + 2000;
     let frame = 0;
     const tryRestore = () => {
       if (el.scrollHeight - el.clientHeight >= target || Date.now() > until) {
         el.scrollTop = target;
         return;
       }
+      el.scrollTop = el.scrollHeight;
       frame = requestAnimationFrame(tryRestore);
     };
     tryRestore();

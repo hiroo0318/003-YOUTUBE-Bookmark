@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { loadOlderAction, refreshFeedAction, searchInChannelAction, toggleLikeAction } from "@/app/actions";
 import { IconSearch } from "@/components/icons";
 import { LikeToggle } from "@/components/like-button";
@@ -12,6 +12,9 @@ import { ChannelRail } from "./channel-rail";
 import type { ChannelLite, FeedVideo } from "@/lib/data";
 import { clockTime, timeAgo } from "@/lib/format";
 import type { SearchVideo } from "@/lib/youtube";
+
+// 한 번에 그리는 카드 수. 목록 끝이 보이면 이만큼씩 더 그린다(전체 수백 개를 한꺼번에 그리면 화면이 멈춘다).
+const PAGE_SIZE = 40;
 
 export function Feed({
   videos,
@@ -43,18 +46,22 @@ export function Feed({
   const [kind, setKind] = useState<"video" | "short">("video");
   const [remaining, setRemaining] = useState(searchRemaining);
 
+  // 로고 선택 표시는 바로 바꾸고, 목록은 그 다음에 그린다(누른 즉시 반응하도록).
+  const listChip = useDeferredValue(chip);
+  const listQuery = useDeferredValue(query);
+
   // 채널(또는 좋아요)·검색어로 거른 뒤 일반 영상과 쇼츠로 나눈다.
   // 좋아요는 누른 순서대로, 재생 불가로 바뀐 영상도 '볼 수 없는 영상'으로 남겨 뺄 수 있게 한다.
   const { longs, shorts } = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = listQuery.trim().toLowerCase();
     const byId = new Map(videos.map((v) => [v.videoId, v]));
     const pool =
-      chip === "liked"
+      listChip === "liked"
         ? liked.map((id) => byId.get(id)).filter((v): v is FeedVideo => !!v)
-        : videos.filter((v) => v.playable && (chip === "all" || v.channelId === chip));
+        : videos.filter((v) => v.playable && (listChip === "all" || v.channelId === listChip));
     const base = pool.filter((v) => !q || v.title.toLowerCase().includes(q) || v.channelTitle.toLowerCase().includes(q));
     return { longs: base.filter((v) => !v.isShort), shorts: base.filter((v) => v.isShort) };
-  }, [videos, query, chip, liked]);
+  }, [videos, listQuery, listChip, liked]);
 
   // 먼저 화면에 반영하고 저장한다. 실패하면 되돌린다.
   const toggleLike = async (videoId: string) => {
@@ -68,6 +75,25 @@ export function Feed({
     }
   };
   const filtered = kind === "video" ? longs : shorts;
+
+  // 보이는 카드 수: 채널·종류·검색어가 바뀌면 처음 PAGE_SIZE개부터 다시 시작한다.
+  const listKey = `${listChip}-${kind}-${listQuery}`;
+  const [shown, setShown] = useState({ key: listKey, count: PAGE_SIZE });
+  const visible = shown.key === listKey ? shown.count : PAGE_SIZE;
+  const sentinel = useRef<HTMLDivElement>(null);
+  const hasMoreRows = visible < filtered.length;
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el || !hasMoreRows) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setShown({ key: listKey, count: visible + PAGE_SIZE });
+      },
+      { rootMargin: "600px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [listKey, visible, hasMoreRows]);
 
   if (channels.length === 0) {
     return (
@@ -151,7 +177,7 @@ export function Feed({
       <ScrollArea resetKey={`${chip}-${kind}`} className="flex flex-col gap-3.5 px-5 pb-4 pt-1">
         {likeError ? <p className="text-caption text-danger-ink">{likeError}</p> : null}
         {kind === "video"
-          ? longs.map((v) => (
+          ? longs.slice(0, visible).map((v) => (
               <div key={v.videoId} className="flex items-end gap-1">
                 {v.playable ? (
                   <Link href={`/kid/watch/${v.videoId}`} className="flex min-w-0 flex-1 gap-3 text-ink">
@@ -181,7 +207,7 @@ export function Feed({
         {kind === "short" && shorts.length > 0 ? (
           // 쇼츠는 한 편씩 눌러 재생한다(연속 넘겨보기 피드는 만들지 않는다).
           <div className="grid grid-cols-3 gap-x-2 gap-y-3">
-            {shorts.map((v) => (
+            {shorts.slice(0, visible).map((v) => (
               <div key={v.videoId} className="relative flex min-w-0 flex-col">
                 {v.playable ? (
                   <Link href={`/kid/watch/${v.videoId}`} className="flex min-w-0 flex-col gap-1.5 text-ink">
@@ -202,7 +228,9 @@ export function Feed({
           </div>
         ) : null}
 
-        {isChannel && !query.trim() ? (
+        {hasMoreRows ? <div ref={sentinel} className="h-px" aria-hidden /> : null}
+
+        {isChannel && !query.trim() && !hasMoreRows ? (
           <OlderButton key={`${chip}-${kind}`} channelId={chip} kind={kind} />
         ) : null}
 
