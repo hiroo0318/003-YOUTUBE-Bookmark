@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { loadOlderAction, refreshFeedAction, searchInChannelAction } from "@/app/actions";
+import { loadOlderAction, refreshFeedAction, searchInChannelAction, toggleLikeAction } from "@/app/actions";
 import { IconSearch } from "@/components/icons";
-import { Thumb, VideoRowBody } from "@/components/video";
+import { LikeToggle } from "@/components/like-button";
+import { RowTag, Thumb, VideoRowBody } from "@/components/video";
 import { ChannelRail } from "./channel-rail";
 import type { ChannelLite, FeedVideo } from "@/lib/data";
 import { clockTime, timeAgo } from "@/lib/format";
@@ -13,31 +14,54 @@ import type { SearchVideo } from "@/lib/youtube";
 export function Feed({
   videos,
   channels,
+  likedIds,
   lastFetchedAt,
   initialChannel = "all",
 }: {
   videos: FeedVideo[];
   channels: ChannelLite[];
+  likedIds: string[];
   lastFetchedAt: string | null;
   initialChannel?: string;
 }) {
   const [query, setQuery] = useState("");
-  const [chip, setChip] = useState<string>(channels.some((c) => c.channelId === initialChannel) ? initialChannel : "all");
+  // chip: "all" | "liked" | 채널 ID
+  const [chip, setChip] = useState<string>(
+    initialChannel === "liked" || channels.some((c) => c.channelId === initialChannel) ? initialChannel : "all",
+  );
+  const [liked, setLiked] = useState<string[]>(likedIds); // 좋아요 누른 순서(최근 먼저)
+  const [likeError, setLikeError] = useState("");
+  const likedSet = useMemo(() => new Set(liked), [liked]);
+  const isChannel = chip !== "all" && chip !== "liked";
   const [refreshing, startRefresh] = useTransition();
   const [more, setMore] = useState<{ items: SearchVideo[]; error?: string } | null>(null);
   const [searchingMore, startMore] = useTransition();
   const [kind, setKind] = useState<"video" | "short">("video");
 
-  // 채널·검색어로 거른 뒤 일반 영상과 쇼츠로 나눈다.
+  // 채널(또는 좋아요)·검색어로 거른 뒤 일반 영상과 쇼츠로 나눈다.
+  // 좋아요는 누른 순서대로, 재생 불가로 바뀐 영상도 '볼 수 없는 영상'으로 남겨 뺄 수 있게 한다.
   const { longs, shorts } = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const base = videos.filter(
-      (v) =>
-        (chip === "all" || v.channelId === chip) &&
-        (!q || v.title.toLowerCase().includes(q) || v.channelTitle.toLowerCase().includes(q)),
-    );
+    const byId = new Map(videos.map((v) => [v.videoId, v]));
+    const pool =
+      chip === "liked"
+        ? liked.map((id) => byId.get(id)).filter((v): v is FeedVideo => !!v)
+        : videos.filter((v) => v.playable && (chip === "all" || v.channelId === chip));
+    const base = pool.filter((v) => !q || v.title.toLowerCase().includes(q) || v.channelTitle.toLowerCase().includes(q));
     return { longs: base.filter((v) => !v.isShort), shorts: base.filter((v) => v.isShort) };
-  }, [videos, query, chip]);
+  }, [videos, query, chip, liked]);
+
+  // 먼저 화면에 반영하고 저장한다. 실패하면 되돌린다.
+  const toggleLike = async (videoId: string) => {
+    const on = !likedSet.has(videoId);
+    setLikeError("");
+    setLiked((cur) => (on ? [videoId, ...cur] : cur.filter((id) => id !== videoId)));
+    const r = await toggleLikeAction(videoId, on);
+    if (!r.ok) {
+      setLiked((cur) => (on ? cur.filter((id) => id !== videoId) : [videoId, ...cur]));
+      setLikeError(r.error);
+    }
+  };
   const filtered = kind === "video" ? longs : shorts;
 
   if (channels.length === 0) {
@@ -118,40 +142,81 @@ export function Feed({
       </div>
 
       <main className="flex flex-1 flex-col gap-3.5 px-5 pb-4 pt-1">
+        {likeError ? <p className="text-caption text-danger-ink">{likeError}</p> : null}
         {kind === "video"
           ? longs.map((v) => (
-              <Link key={v.videoId} href={`/kid/watch/${v.videoId}`} className="flex gap-3 text-ink">
-                <VideoRowBody
-                  thumbnailUrl={v.thumbnailUrl}
-                  duration={v.durationSeconds}
-                  playable
-                  title={v.title}
-                  meta={`${v.channelTitle} · ${timeAgo(v.publishedAt)}`}
-                />
-              </Link>
+              <div key={v.videoId} className="flex items-end gap-1">
+                {v.playable ? (
+                  <Link href={`/kid/watch/${v.videoId}`} className="flex min-w-0 flex-1 gap-3 text-ink">
+                    <VideoRowBody
+                      thumbnailUrl={v.thumbnailUrl}
+                      duration={v.durationSeconds}
+                      playable
+                      title={v.title}
+                      meta={`${v.channelTitle} · ${timeAgo(v.publishedAt)}`}
+                    />
+                  </Link>
+                ) : (
+                  <div className="flex min-w-0 flex-1 gap-3 text-ink">
+                    <VideoRowBody
+                      thumbnailUrl={v.thumbnailUrl}
+                      title={v.title}
+                      meta={v.channelTitle}
+                      dimTitle
+                      tag={<RowTag tone="muted">볼 수 없는 영상</RowTag>}
+                    />
+                  </div>
+                )}
+                <LikeToggle liked={likedSet.has(v.videoId)} onToggle={() => toggleLike(v.videoId)} />
+              </div>
             ))
           : null}
         {kind === "short" && shorts.length > 0 ? (
           // 쇼츠는 한 편씩 눌러 재생한다(연속 넘겨보기 피드는 만들지 않는다).
           <div className="grid grid-cols-3 gap-x-2 gap-y-3">
             {shorts.map((v) => (
-              <Link key={v.videoId} href={`/kid/watch/${v.videoId}`} className="flex min-w-0 flex-col gap-1.5 text-ink">
-                <Thumb url={v.thumbnailUrl} duration={v.durationSeconds} className="aspect-[9/16] w-full" />
-                <span className="line-clamp-2 text-meta font-semibold leading-[1.35]">{v.title}</span>
-              </Link>
+              <div key={v.videoId} className="relative flex min-w-0 flex-col">
+                {v.playable ? (
+                  <Link href={`/kid/watch/${v.videoId}`} className="flex min-w-0 flex-col gap-1.5 text-ink">
+                    <Thumb url={v.thumbnailUrl} duration={v.durationSeconds} className="aspect-[9/16] w-full" />
+                    <span className="line-clamp-2 text-meta font-semibold leading-[1.35]">{v.title}</span>
+                  </Link>
+                ) : (
+                  <div className="flex min-w-0 flex-col gap-1.5 text-sub">
+                    <Thumb url={v.thumbnailUrl} className="aspect-[9/16] w-full opacity-50" />
+                    <span className="line-clamp-2 text-meta font-semibold leading-[1.35]">볼 수 없는 영상</span>
+                  </div>
+                )}
+                <span className="absolute right-1.5 top-1.5">
+                  <LikeToggle variant="overlay" liked={likedSet.has(v.videoId)} onToggle={() => toggleLike(v.videoId)} />
+                </span>
+              </div>
             ))}
           </div>
         ) : null}
 
-        {chip !== "all" && !query.trim() ? (
+        {isChannel && !query.trim() ? (
           <OlderButton key={`${chip}-${kind}`} channelId={chip} kind={kind} />
         ) : null}
 
         {filtered.length === 0 ? (
           <div className="flex flex-col gap-1.5 px-3 py-12 text-center">
-            <span className="text-subhead font-semibold">{query.trim() ? "최근 영상에서 찾지 못했어요" : kind === "short" ? "아직 쇼츠가 없어요" : "아직 영상이 없어요"}</span>
-            <span className="text-caption text-sub">승인 채널마다 최근 50개 영상에서 찾아요.</span>
-            {chip !== "all" && query.trim() ? (
+            {chip === "liked" && !query.trim() ? (
+              <>
+                <span className="text-subhead font-semibold">{kind === "short" ? "좋아요한 쇼츠가 없어요" : "좋아요한 영상이 없어요"}</span>
+                <span className="text-caption text-sub">마음에 드는 영상에 ♥를 눌러 보세요.</span>
+              </>
+            ) : (
+              <>
+                <span className="text-subhead font-semibold">
+                  {query.trim() ? "최근 영상에서 찾지 못했어요" : kind === "short" ? "아직 쇼츠가 없어요" : "아직 영상이 없어요"}
+                </span>
+                <span className="text-caption text-sub">
+                  {chip === "liked" ? "좋아요한 영상에서 찾아요." : "승인 채널마다 최근 50개 영상에서 찾아요."}
+                </span>
+              </>
+            )}
+            {isChannel && query.trim() ? (
               <button
                 type="button"
                 disabled={searchingMore}

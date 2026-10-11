@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { IconHeart } from "@/components/icons";
 import { ChannelAvatar } from "@/components/video";
 import type { ChannelLite } from "@/lib/data";
 
-// 승인 채널 로고 가로 줄. 누르면 그 채널만, 다시 누르면 해제(전체). 끝의 '전체 보기'는 모든 채널을 격자로 연다.
+// 승인 채널 로고 가로 줄. 맨 앞 '좋아요'는 좋아요한 영상만, 채널은 그 채널만 보여주고 다시 누르면 해제(전체).
+// 끝의 '전체 보기'는 모든 채널을 격자로 연다.
 export function ChannelRail({
   channels,
   selected,
@@ -27,6 +29,20 @@ export function ChannelRail({
   return (
     <>
       <div ref={railRef} className="no-scrollbar flex flex-none items-start gap-1 overflow-x-auto px-4 pb-1 pt-3">
+        <button
+          type="button"
+          aria-pressed={selected === "liked"}
+          data-ch="liked"
+          onClick={() => onToggle("liked")}
+          className={`flex w-[64px] flex-none flex-col items-center gap-1.5 pt-0.5 transition-opacity ${anySelected && selected !== "liked" ? "opacity-45" : ""}`}
+        >
+          <span className={`rounded-full p-[2px] ${selected === "liked" ? "ring-2 ring-like" : ""}`}>
+            <span className="flex size-12 items-center justify-center rounded-full bg-like-soft text-like">
+              <IconHeart size={22} filled />
+            </span>
+          </span>
+          <span className={`text-label ${selected === "liked" ? "font-bold text-ink" : "text-sub"}`}>좋아요</span>
+        </button>
         {channels.map((c) => (
           <ChannelButton key={c.channelId} channel={c} on={selected === c.channelId} dim={anySelected && selected !== c.channelId} onClick={() => onToggle(c.channelId)} />
         ))}

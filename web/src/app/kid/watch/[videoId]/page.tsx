@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { BackHeader } from "@/components/chrome";
 import { Player } from "@/components/player";
+import { WatchLikeButton } from "@/components/like-button";
 import { ChannelAvatar, VideoRowBody } from "@/components/video";
 import { requireMe } from "@/lib/auth";
-import { getChannelLites, getChannelStatusMap, getVideoLites } from "@/lib/data";
+import { getChannelLites, getChannelStatusMap, getVideoLites, isLiked } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { ensureChannels, ensureVideos } from "@/lib/yt-cache";
@@ -46,6 +47,7 @@ export default async function WatchPage({ params, searchParams }: PageProps<"/ki
   }
 
   const supabase = await createClient();
+  const liked = status === "approved" ? await isLiked(me.profileId!, videoId) : false;
   const { data: more } =
     status === "approved"
       ? await supabase
@@ -67,9 +69,14 @@ export default async function WatchPage({ params, searchParams }: PageProps<"/ki
           <h1 className="text-heading font-bold">{video.title}</h1>
           <div className="flex items-center gap-2.5">
             <ChannelAvatar title={channel?.title ?? "?"} url={channel?.thumbnailUrl} size={36} />
-            <span className="text-body font-semibold">{channel?.title}</span>
+            <span className="min-w-0 truncate text-body font-semibold">{channel?.title}</span>
             {status === "approved" ? (
-              <span className="ml-auto rounded-full bg-accent-soft px-2 py-[3px] text-label font-semibold text-accent-strong">승인 채널</span>
+              <>
+                <span className="flex-none rounded-full bg-accent-soft px-2 py-[3px] text-label font-semibold text-accent-strong">승인 채널</span>
+                <span className="ml-auto">
+                  <WatchLikeButton videoId={videoId} initial={liked} />
+                </span>
+              </>
             ) : null}
           </div>
         </div>

@@ -16,6 +16,7 @@ export type FeedVideo = {
   publishedAt: string | null;
   durationSeconds: number | null;
   isShort: boolean;
+  playable: boolean;
 };
 
 export type ChannelLite = { channelId: string; title: string; thumbnailUrl: string | null };
@@ -47,9 +48,10 @@ export async function getApprovedChannelIds(profileId: string) {
 export async function getApprovedFeed(profileId: string) {
   const supabase = await createClient();
   const channelIds = await getApprovedChannelIds(profileId);
-  if (channelIds.length === 0) return { videos: [] as FeedVideo[], channels: [] as ChannelLite[], lastFetchedAt: null as string | null };
+  if (channelIds.length === 0)
+    return { videos: [] as FeedVideo[], channels: [] as ChannelLite[], lastFetchedAt: null as string | null, likedIds: [] as string[] };
 
-  const [{ data: vids }, { data: chans }] = await Promise.all([
+  const [{ data: vids }, { data: chans }, { data: likes }] = await Promise.all([
     supabase
       .from("yt_video_cache")
       .select("video_id, channel_id, title, thumbnail_url, published_at, duration_seconds, is_short")
@@ -58,7 +60,21 @@ export async function getApprovedFeed(profileId: string) {
       .order("published_at", { ascending: false })
       .limit(3000),
     supabase.from("yt_channel_cache").select("channel_id, title, thumbnail_url, videos_fetched_at").in("channel_id", channelIds),
+    supabase.from("video_likes").select("video_id").eq("profile_id", profileId).order("created_at", { ascending: false }),
   ]);
+
+  // 좋아요한 영상 중 위 목록에 없는 것(오래됐거나 재생 불가로 바뀐 것)을 더 읽는다.
+  // 캐시 읽기 정책상 승인이 취소된 채널의 영상은 나오지 않으므로 좋아요 목록에서도 빠진다.
+  const likedAll = (likes ?? []).map((l) => l.video_id as string);
+  const have = new Set((vids ?? []).map((v) => v.video_id as string));
+  const missing = likedAll.filter((id) => !have.has(id));
+  const { data: extra } = missing.length
+    ? await supabase
+        .from("yt_video_cache")
+        .select("video_id, channel_id, title, thumbnail_url, published_at, duration_seconds, is_short, playable")
+        .in("video_id", missing)
+        .in("channel_id", channelIds)
+    : { data: [] };
 
   const chanMap = new Map((chans ?? []).map((c) => [c.channel_id as string, c]));
   const channels: ChannelLite[] = channelIds
@@ -67,7 +83,7 @@ export async function getApprovedFeed(profileId: string) {
   const fetchedTimes = (chans ?? []).map((c) => c.videos_fetched_at).filter(Boolean) as string[];
   const lastFetchedAt = fetchedTimes.sort().at(-1) ?? null;
 
-  const videos: FeedVideo[] = (vids ?? []).map((v) => ({
+  const toFeed = (v: NonNullable<typeof extra>[number] | NonNullable<typeof vids>[number], playable: boolean): FeedVideo => ({
     videoId: v.video_id,
     channelId: v.channel_id,
     channelTitle: chanMap.get(v.channel_id)?.title ?? "",
@@ -76,8 +92,16 @@ export async function getApprovedFeed(profileId: string) {
     publishedAt: v.published_at,
     durationSeconds: v.duration_seconds,
     isShort: v.is_short === true,
-  }));
-  return { videos, channels, lastFetchedAt };
+    playable,
+  });
+  // 좋아요 목록 전용 영상(재생 불가 포함)은 뒤에 붙인다. 화면에서 채널·전체 목록은 재생 가능한 것만 쓴다.
+  const videos: FeedVideo[] = [
+    ...(vids ?? []).map((v) => toFeed(v, true)),
+    ...(extra ?? []).map((v) => toFeed(v, (v as { playable: boolean }).playable === true)),
+  ];
+  const known = new Set(videos.map((v) => v.videoId));
+  const likedIds = likedAll.filter((id) => known.has(id));
+  return { videos, channels, lastFetchedAt, likedIds };
 }
 
 // 검색 결과 표시용: 채널별 상태(승인/거절/대기/없음)
@@ -112,4 +136,10 @@ export async function getVideoLites(videoIds: string[], opts?: ReadOpts) {
   for (const v of data ?? [])
     map.set(v.video_id, { title: v.title, thumbnailUrl: v.thumbnail_url, channelId: v.channel_id, durationSeconds: v.duration_seconds });
   return map;
+}
+
+export async function isLiked(profileId: string, videoId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase.from("video_likes").select("video_id").eq("profile_id", profileId).eq("video_id", videoId).maybeSingle();
+  return !!data;
 }

@@ -181,7 +181,7 @@ export async function loadOlderVideos(channelId: string, kind: Kind): Promise<{ 
 }
 
 // 저장한 영상 중 마지막 확인 후 7일 지난 것을 오래된 순으로 다시 확인한다(50개씩 묶어 호출, 50개당 1단위).
-// 삭제·비공개로 응답에 없으면 지운다. 단 요청의 계기 영상은 부모 확인용으로 남기고 재생 불가로 표시한다.
+// 삭제·비공개로 응답에 없으면 지운다. 단 요청의 계기 영상(부모 확인용)과 좋아요한 영상(아이 목록용)은 남기고 재생 불가로 표시한다.
 export async function recheckVideos(maxVideos = 500) {
   const admin = createAdminClient();
   const cutoff = new Date(Date.now() - RECHECK_MS).toISOString();
@@ -201,8 +201,14 @@ export async function recheckVideos(maxVideos = 500) {
   const returned = new Set(details.map((d) => d.videoId));
   const gone = ids.filter((id) => !returned.has(id));
   if (gone.length) {
-    const { data: reqs } = await admin.from("channel_requests").select("trigger_video_ids").overlaps("trigger_video_ids", gone);
-    const referenced = new Set((reqs ?? []).flatMap((r) => r.trigger_video_ids as string[]));
+    const [{ data: reqs }, { data: likes }] = await Promise.all([
+      admin.from("channel_requests").select("trigger_video_ids").overlaps("trigger_video_ids", gone),
+      admin.from("video_likes").select("video_id").in("video_id", gone),
+    ]);
+    const referenced = new Set([
+      ...(reqs ?? []).flatMap((r) => r.trigger_video_ids as string[]),
+      ...(likes ?? []).map((l) => l.video_id as string),
+    ]);
     const del = gone.filter((id) => !referenced.has(id));
     const keep = gone.filter((id) => referenced.has(id));
     if (del.length) await admin.from("yt_video_cache").delete().in("video_id", del);

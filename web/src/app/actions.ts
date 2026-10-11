@@ -109,6 +109,24 @@ export async function loadOlderAction(channelId: string, kind: "video" | "short"
   }
 }
 
+// 좋아요 켜기/끄기: 승인 채널의 저장된 영상에만 누를 수 있다. YouTube API는 부르지 않는다.
+export async function toggleLikeAction(videoId: string, on: boolean) {
+  const me = await requireMe("child");
+  const supabase = await createClient();
+  if (!on) {
+    const { error } = await supabase.from("video_likes").delete().eq("profile_id", me.profileId!).eq("video_id", videoId);
+    if (error) return { ok: false as const, error: "좋아요를 취소하지 못했어요." };
+  } else {
+    // 캐시 읽기 정책상 아이는 승인 채널의 영상만 읽을 수 있다. 읽히면 승인 채널 영상이다.
+    const { data: video } = await supabase.from("yt_video_cache").select("video_id").eq("video_id", videoId).maybeSingle();
+    if (!video) return { ok: false as const, error: "승인된 채널의 영상만 좋아요할 수 있어요." };
+    const { error } = await supabase.from("video_likes").insert({ profile_id: me.profileId!, video_id: videoId });
+    if (error && error.code !== "23505") return { ok: false as const, error: "좋아요를 누르지 못했어요." };
+  }
+  revalidatePath("/kid");
+  return { ok: true as const };
+}
+
 export async function refreshFeedAction() {
   const me = await requireMe("child");
   await refreshProfileChannels(me.profileId!, { force: true });

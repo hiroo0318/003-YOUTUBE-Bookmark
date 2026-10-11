@@ -104,3 +104,8 @@ export const IconLock = ({ size = 30 }: P) => (
     <path d="M8 10V7a4 4 0 0 1 8 0v3" />
   </svg>
 );
+export const IconHeart = ({ size = 20, filled = false }: P & { filled?: boolean }) => (
+  <svg {...base(size)} fill={filled ? "currentColor" : "none"}>
+    <path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" />
+  </svg>
+);
