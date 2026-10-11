@@ -4,6 +4,7 @@ import { SignOutForm } from "@/components/sign-out";
 import { requireMe } from "@/lib/auth";
 import { getProfiles } from "@/lib/parent-data";
 import { createClient } from "@/lib/supabase/server";
+import { SEARCH_DAILY_LIMIT } from "@/lib/format";
 import { quotaDay } from "@/lib/yt-cache";
 import { ModeSwitch } from "./mode-switch";
 
@@ -47,7 +48,7 @@ export default async function SettingsPage() {
           <div className="flex flex-col gap-2 rounded-2xl border border-line bg-surface p-3.5">
             <div className="flex justify-between text-body font-semibold">
               <span>가족 전체</span>
-              <span>{used} / 100회</span>
+              <span>{used} / {SEARCH_DAILY_LIMIT}회</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-track">
               <div className="h-2 bg-accent" style={{ width: `${Math.min(100, used)}%` }} />

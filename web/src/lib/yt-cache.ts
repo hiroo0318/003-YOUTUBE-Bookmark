@@ -1,4 +1,5 @@
 import "server-only";
+import { SEARCH_DAILY_LIMIT } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/server";
 import { QuotaExceededError, getChannels, getPlaylistPage, getVideos, splitPlaylistIds, type VideoDetail } from "@/lib/youtube";
 
@@ -274,9 +275,18 @@ export function quotaDay() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles" }).format(new Date());
 }
 
+// 검색 한 번을 기록하고 오늘 남은 횟수를 돌려준다.
 export async function addSearchUsage() {
   const admin = createAdminClient();
   const day = quotaDay();
   const { data } = await admin.from("search_usage").select("count").eq("day", day).maybeSingle();
-  await admin.from("search_usage").upsert({ day, count: (data?.count ?? 0) + 1 });
+  const count = (data?.count ?? 0) + 1;
+  await admin.from("search_usage").upsert({ day, count });
+  return Math.max(0, SEARCH_DAILY_LIMIT - count);
+}
+
+// 오늘 남은 검색 횟수(가족 공유). 아이는 사용량 표를 읽을 수 없어 서버 권한으로 읽는다.
+export async function getSearchRemaining() {
+  const { data } = await createAdminClient().from("search_usage").select("count").eq("day", quotaDay()).maybeSingle();
+  return Math.max(0, SEARCH_DAILY_LIMIT - (data?.count ?? 0));
 }

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { searchChannelsAction, setChannelStateAction } from "@/app/actions";
+import { SearchQuota } from "@/components/search-quota";
 import { ChannelAvatar } from "@/components/video";
 import type { SearchChannel } from "@/lib/youtube";
 
@@ -9,9 +10,11 @@ export function AddChannelClient({
   profileId,
   kidName,
   initialStates,
+  initialRemaining,
 }: {
   profileId: string;
   kidName: string;
+  initialRemaining: number;
   initialStates: Record<string, string>;
 }) {
   const [q, setQ] = useState("");
@@ -20,11 +23,13 @@ export function AddChannelClient({
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
   const [busy, setBusy] = useState<string | null>(null);
+  const [remaining, setRemaining] = useState(initialRemaining);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     start(async () => {
       const r = await searchChannelsAction(q);
+      if (r.remaining !== undefined) setRemaining(r.remaining);
       if (!r.ok) return setError(r.error);
       setError("");
       setItems(r.items);
@@ -59,6 +64,7 @@ export function AddChannelClient({
           검색
         </button>
       </form>
+      <SearchQuota remaining={remaining} className="-mt-1" />
       {error ? <p className="rounded-xl bg-danger-bg px-3.5 py-3 text-caption text-danger-ink">{error}</p> : null}
       {items.map((c) => {
         const st = states[c.channelId];

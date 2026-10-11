@@ -8,7 +8,7 @@ import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { QuotaExceededError, searchChannels, searchVideos, type SearchChannel, type SearchVideo } from "@/lib/youtube";
 import { addSearchUsage, ensureChannels, ensureVideos, loadOlderVideos, refreshChannelVideos, refreshProfileChannels } from "@/lib/yt-cache";
 
-type Fail = { ok: false; error: string };
+type Fail = { ok: false; error: string; remaining?: number };
 const QUOTA_MSG = "오늘 검색 횟수를 다 썼어요. 승인 채널 영상은 계속 볼 수 있어요.";
 
 // ───── 아이 ─────
@@ -18,21 +18,22 @@ export type SearchResultItem = SearchVideo & { status: ChannelStatus };
 export async function searchAction(
   q: string,
   pageToken?: string | null,
-): Promise<{ ok: true; items: SearchResultItem[]; nextPageToken: string | null } | Fail> {
+): Promise<{ ok: true; items: SearchResultItem[]; nextPageToken: string | null; remaining?: number } | Fail> {
   const me = await requireMe("child");
   const query = q.trim();
   if (!query) return { ok: true, items: [], nextPageToken: null };
   try {
     const res = await searchVideos(query, pageToken ?? undefined);
-    await addSearchUsage();
+    const remaining = await addSearchUsage();
     const statuses = await getChannelStatusMap(me.profileId!, res.items.map((i) => i.channelId));
     return {
       ok: true,
+      remaining,
       nextPageToken: res.nextPageToken,
       items: res.items.map((i) => ({ ...i, status: statuses.get(i.channelId) ?? "none" })),
     };
   } catch (e) {
-    if (e instanceof QuotaExceededError) return { ok: false, error: QUOTA_MSG };
+    if (e instanceof QuotaExceededError) return { ok: false, error: QUOTA_MSG, remaining: 0 };
     console.error(e);
     return { ok: false, error: "검색하지 못했어요. 잠시 후 다시 시도해 주세요." };
   }
@@ -45,10 +46,10 @@ export async function searchInChannelAction(channelId: string, q: string) {
   if (statuses.get(channelId) !== "approved") return { ok: false as const, error: "승인된 채널만 찾을 수 있어요." };
   try {
     const res = await searchVideos(q.trim(), undefined, channelId);
-    await addSearchUsage();
-    return { ok: true as const, items: res.items };
+    const remaining = await addSearchUsage();
+    return { ok: true as const, items: res.items, remaining };
   } catch (e) {
-    if (e instanceof QuotaExceededError) return { ok: false as const, error: QUOTA_MSG };
+    if (e instanceof QuotaExceededError) return { ok: false as const, error: QUOTA_MSG, remaining: 0 };
     return { ok: false as const, error: "검색하지 못했어요." };
   }
 }
@@ -186,16 +187,16 @@ export async function setChannelStateAction(profileId: string, channelId: string
   return { ok: true as const };
 }
 
-export async function searchChannelsAction(q: string): Promise<{ ok: true; items: SearchChannel[] } | Fail> {
+export async function searchChannelsAction(q: string): Promise<{ ok: true; items: SearchChannel[]; remaining?: number } | Fail> {
   await requireMe("parent");
   if (!q.trim()) return { ok: true, items: [] };
   try {
     const items = await searchChannels(q.trim());
-    await addSearchUsage();
+    const remaining = await addSearchUsage();
     await ensureChannels(items.map((i) => i.channelId)).catch(() => undefined);
-    return { ok: true, items };
+    return { ok: true, items, remaining };
   } catch (e) {
-    if (e instanceof QuotaExceededError) return { ok: false, error: "오늘 검색 횟수를 다 썼어요." };
+    if (e instanceof QuotaExceededError) return { ok: false, error: "오늘 검색 횟수를 다 썼어요.", remaining: 0 };
     return { ok: false, error: "검색하지 못했어요." };
   }
 }

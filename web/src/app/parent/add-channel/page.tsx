@@ -3,6 +3,7 @@ import { BackHeader } from "@/components/chrome";
 import { requireMe } from "@/lib/auth";
 import { getProfiles } from "@/lib/parent-data";
 import { createClient } from "@/lib/supabase/server";
+import { getSearchRemaining } from "@/lib/yt-cache";
 import { AddChannelClient } from "./add-channel-client";
 
 export default async function AddChannelPage({ searchParams }: PageProps<"/parent/add-channel">) {
@@ -13,7 +14,10 @@ export default async function AddChannelPage({ searchParams }: PageProps<"/paren
   if (!profile) redirect("/parent/channels");
 
   const supabase = await createClient();
-  const { data: states } = await supabase.from("channel_states").select("channel_id, status").eq("profile_id", profile.id);
+  const [{ data: states }, remaining] = await Promise.all([
+    supabase.from("channel_states").select("channel_id, status").eq("profile_id", profile.id),
+    getSearchRemaining(),
+  ]);
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -21,6 +25,7 @@ export default async function AddChannelPage({ searchParams }: PageProps<"/paren
       <AddChannelClient
         profileId={profile.id}
         kidName={profile.name}
+        initialRemaining={remaining}
         initialStates={Object.fromEntries((states ?? []).map((s) => [s.channel_id, s.status]))}
       />
     </div>

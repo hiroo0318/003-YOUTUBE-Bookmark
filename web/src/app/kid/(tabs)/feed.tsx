@@ -6,6 +6,7 @@ import { loadOlderAction, refreshFeedAction, searchInChannelAction, toggleLikeAc
 import { IconSearch } from "@/components/icons";
 import { LikeToggle } from "@/components/like-button";
 import { ScrollArea } from "@/components/scroll-area";
+import { SearchQuota } from "@/components/search-quota";
 import { RowTag, Thumb, VideoRowBody } from "@/components/video";
 import { ChannelRail } from "./channel-rail";
 import type { ChannelLite, FeedVideo } from "@/lib/data";
@@ -16,12 +17,14 @@ export function Feed({
   videos,
   channels,
   likedIds,
+  searchRemaining,
   lastFetchedAt,
   initialChannel = "all",
 }: {
   videos: FeedVideo[];
   channels: ChannelLite[];
   likedIds: string[];
+  searchRemaining: number;
   lastFetchedAt: string | null;
   initialChannel?: string;
 }) {
@@ -38,6 +41,7 @@ export function Feed({
   const [more, setMore] = useState<{ items: SearchVideo[]; error?: string } | null>(null);
   const [searchingMore, startMore] = useTransition();
   const [kind, setKind] = useState<"video" | "short">("video");
+  const [remaining, setRemaining] = useState(searchRemaining);
 
   // 채널(또는 좋아요)·검색어로 거른 뒤 일반 영상과 쇼츠로 나눈다.
   // 좋아요는 누른 순서대로, 재생 불가로 바뀐 영상도 '볼 수 없는 영상'으로 남겨 뺄 수 있게 한다.
@@ -226,6 +230,7 @@ export function Feed({
                 onClick={() =>
                   startMore(async () => {
                     const r = await searchInChannelAction(chip, query);
+                    if (r.remaining !== undefined) setRemaining(r.remaining);
                     setMore(r.ok ? { items: r.items } : { items: [], error: r.error });
                   })
                 }
@@ -234,6 +239,7 @@ export function Feed({
                 {searchingMore ? "찾는 중…" : "YouTube에서 이 채널 더 찾기"}
               </button>
             ) : null}
+            {isChannel && query.trim() ? <SearchQuota remaining={remaining} className="mt-1.5" /> : null}
           </div>
         ) : null}
 

@@ -1,3 +1,6 @@
+// YouTube 검색(search.list) 하루 한도: 가족 전체가 나눠 쓴다(태평양 시간 자정 초기화).
+export const SEARCH_DAILY_LIMIT = 100;
+
 export function formatDuration(sec: number | null | undefined) {
   if (sec == null) return "";
   const h = Math.floor(sec / 3600);

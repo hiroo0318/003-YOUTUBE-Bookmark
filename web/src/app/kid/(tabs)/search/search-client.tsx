@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 import { channelStatusesAction, requestChannelAction, searchAction, type SearchResultItem } from "@/app/actions";
 import { IconClock, IconPlus } from "@/components/icons";
 import { ScrollArea } from "@/components/scroll-area";
+import { SearchQuota } from "@/components/search-quota";
 import { ChannelAvatar, RowTag, Thumb, VideoRowBody } from "@/components/video";
 
 // 검색 결과는 프로필별로 이 탭(sessionStorage)에만 보관한다. 승인 상태는 복원할 때 다시 조회한다.
@@ -25,7 +26,16 @@ function uniq(list: SearchResultItem[]) {
   return list.filter((i) => i.videoId && !seen.has(i.videoId) && !!seen.add(i.videoId));
 }
 
-export function SearchClient({ approvalMode, profileId }: { approvalMode: boolean; profileId: string }) {
+export function SearchClient({
+  approvalMode,
+  profileId,
+  initialRemaining,
+}: {
+  approvalMode: boolean;
+  profileId: string;
+  initialRemaining: number;
+}) {
+  const [remaining, setRemaining] = useState(initialRemaining);
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<SearchResultItem[]>([]);
@@ -62,6 +72,7 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
     if (!q) return;
     start(async () => {
       const r = await searchAction(q);
+      if (r.remaining !== undefined) setRemaining(r.remaining);
       if (!r.ok) return setError(r.error);
       setError("");
       setQuery(q);
@@ -76,6 +87,7 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
     if (!next) return;
     start(async () => {
       const r = await searchAction(query, next);
+      if (r.remaining !== undefined) setRemaining(r.remaining);
       if (!r.ok) return setError(r.error);
       const list = uniq([...items, ...r.items]);
       setItems(list);
@@ -110,6 +122,7 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
             검색
           </button>
         </form>
+        <SearchQuota remaining={remaining} className="mx-5 mt-1.5" />
 
         {error ? (
           <p role="alert" className="mx-5 mt-3 rounded-xl bg-danger-bg px-3.5 py-3 text-caption text-danger-ink">
