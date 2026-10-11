@@ -4,6 +4,8 @@ import "server-only";
 const API = "https://www.googleapis.com/youtube/v3";
 
 export class QuotaExceededError extends Error {}
+// 재생목록이 없음(예: 쇼츠를 한 번도 올리지 않은 채널의 쇼츠 목록 UUSH…)
+export class NotFoundError extends Error {}
 
 async function call<T>(path: string, params: Record<string, string | number | undefined>): Promise<T> {
   const url = new URL(`${API}/${path}`);
@@ -16,6 +18,7 @@ async function call<T>(path: string, params: Record<string, string | number | un
     if (res.status === 403 && (reason === "quotaExceeded" || reason === "dailyLimitExceeded")) {
       throw new QuotaExceededError("YouTube 검색 한도를 다 썼어요");
     }
+    if (res.status === 404) throw new NotFoundError(`YouTube API ${path} 404 ${reason ?? ""}`);
     throw new Error(`YouTube API ${path} ${res.status} ${reason ?? ""}`);
   }
   return res.json() as Promise<T>;

@@ -250,6 +250,8 @@ none ──(아이 요청)──▶ pending ──(부모 승인)──▶ appro
 - 대체: 재생목록을 못 받으면 전체 업로드 50개를 받고, 3분 이하이면서 세로(`videos.list` `player.embedWidth/Height`)면 쇼츠로 추정한다.
 - 저장: `yt_video_cache.is_short`, `is_vertical`. 채널마다 일반 영상 최근 50개 + 쇼츠 최근 50개.
 
+- 쇼츠를 한 번도 올리지 않은 채널은 쇼츠 목록(UUSH…)이 없어 YouTube가 404(playlistNotFound)를 돌려준다(2026-10-11 실제 확인). 이 경우 빈 목록으로 보고 갱신을 마친다.
+
 ### 6.4 영상 캐시는 채널 단위로 가족이 공유한다 **[확정]**
 
 - 영상 캐시(`yt_channel_cache`, `yt_video_cache`)는 아이 프로필이 아니라 **YouTube 채널 단위**로 한 번만 저장한다. 프로필별 승인 여부는 `channel_states`가 따로 관리한다.

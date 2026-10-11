@@ -1,7 +1,7 @@
 import "server-only";
 import { SEARCH_DAILY_LIMIT } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/server";
-import { QuotaExceededError, getChannels, getPlaylistPage, getVideos, splitPlaylistIds, type VideoDetail } from "@/lib/youtube";
+import { QuotaExceededError, getChannels, getPlaylistPage, getVideos, splitPlaylistIds, type VideoDetail, NotFoundError } from "@/lib/youtube";
 
 const HOUR = 3600_000;
 const STALE_MS = 6 * HOUR; // 승인 채널 영상 갱신 주기
@@ -85,6 +85,16 @@ async function listSources(channelId: string, uploadsPlaylistId: string): Promis
   return [{ playlistId: uploadsPlaylistId, kind: "all" }];
 }
 
+// 재생목록 한 쪽. 목록 자체가 없으면(쇼츠가 없는 채널의 쇼츠 목록 등) 빈 목록으로 본다.
+async function playlistPageOrEmpty(playlistId: string, token: string | null) {
+  try {
+    return await getPlaylistPage(playlistId, token);
+  } catch (e) {
+    if (e instanceof NotFoundError) return { ids: [] as string[], next: null };
+    throw e;
+  }
+}
+
 async function knownIds(ids: string[]) {
   if (ids.length === 0) return new Set<string>();
   const { data } = await createAdminClient().from("yt_video_cache").select("video_id").in("video_id", ids);
@@ -136,7 +146,7 @@ export async function refreshChannelVideos(channelId: string, opts: { force?: bo
 
     let token: string | null = null;
     for (let page = 0; page < (first ? 1 : MAX_NEW_PAGES); page++) {
-      const { ids, next } = await getPlaylistPage(src.playlistId, token);
+      const { ids, next } = await playlistPageOrEmpty(src.playlistId, token);
       const known = await knownIds(ids);
       const fresh = ids.filter((id) => !known.has(id));
       await addVideos(fresh, src.kind);
@@ -170,7 +180,7 @@ export async function loadOlderVideos(channelId: string, kind: Kind): Promise<{ 
   let token = (row[cols.token] as string | null) ?? null;
   let added = 0;
   for (let page = 0; page < MAX_OLDER_SKIP_PAGES; page++) {
-    const { ids, next } = await getPlaylistPage(src.playlistId, token);
+    const { ids, next } = await playlistPageOrEmpty(src.playlistId, token);
     const known = await knownIds(ids);
     const fresh = ids.filter((id) => !known.has(id));
     added = await addVideos(fresh, src.kind);
