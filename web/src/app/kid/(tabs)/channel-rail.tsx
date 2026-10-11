@@ -37,8 +37,9 @@ export function ChannelRail({
           className={`flex w-[64px] flex-none flex-col items-center gap-1.5 pt-0.5 transition-opacity ${anySelected && selected !== "liked" ? "opacity-45" : ""}`}
         >
           <span className={`rounded-full p-[2px] ${selected === "liked" ? "ring-2 ring-like" : ""}`}>
-            <span className="flex size-12 items-center justify-center rounded-full bg-like-soft text-like">
-              <IconHeart size={22} filled />
+            {/* 채널 썸네일과 같은 48px 꽉 찬 원 */}
+            <span className="flex size-12 items-center justify-center rounded-full bg-like text-white">
+              <IconHeart size={24} filled />
             </span>
           </span>
           <span className={`text-label ${selected === "liked" ? "font-bold text-ink" : "text-sub"}`}>좋아요</span>
