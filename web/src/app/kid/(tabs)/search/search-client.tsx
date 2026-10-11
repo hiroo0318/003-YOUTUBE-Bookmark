@@ -18,6 +18,12 @@ function loadSaved(profileId: string): { query: string; items: SearchResultItem[
   }
 }
 
+// 같은 영상이 두 번 들어가지 않게 영상 번호로 거른다(YouTube 검색 중복·예전에 저장된 결과 복원 대비).
+function uniq(list: SearchResultItem[]) {
+  const seen = new Set<string>();
+  return list.filter((i) => i.videoId && !seen.has(i.videoId) && !!seen.add(i.videoId));
+}
+
 export function SearchClient({ approvalMode, profileId }: { approvalMode: boolean; profileId: string }) {
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
@@ -35,7 +41,7 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft(saved.query);
     setQuery(saved.query);
-    setItems(saved.items);
+    setItems(uniq(saved.items ?? []));
     setNext(saved.next);
     channelStatusesAction(saved.items.map((i) => i.channelId)).then((statuses) => {
       setItems((list) => list.map((i) => ({ ...i, status: statuses[i.channelId] ?? i.status })));
@@ -58,9 +64,10 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
       if (!r.ok) return setError(r.error);
       setError("");
       setQuery(q);
-      setItems(r.items);
+      const list = uniq(r.items);
+      setItems(list);
       setNext(r.nextPageToken);
-      persist(q, r.items, r.nextPageToken);
+      persist(q, list, r.nextPageToken);
     });
   }
 
@@ -69,7 +76,7 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
     start(async () => {
       const r = await searchAction(query, next);
       if (!r.ok) return setError(r.error);
-      const list = [...items, ...r.items.filter((n) => !items.some((o) => o.videoId === n.videoId))];
+      const list = uniq([...items, ...r.items]);
       setItems(list);
       setNext(r.nextPageToken);
       persist(query, list, r.nextPageToken);
