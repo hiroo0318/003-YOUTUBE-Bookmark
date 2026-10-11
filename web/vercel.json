@@ -1,4 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "crons": [{ "path": "/api/cron/youtube-maintenance", "schedule": "0 19 * * *" }]
+  "crons": [
+    {
+      "path": "/api/cron/youtube-maintenance",
+      "schedule": "0 19 * * *"
+    }
+  ],
+  "regions": [
+    "icn1"
+  ]
 }
