@@ -48,7 +48,10 @@ export async function searchVideos(q: string, pageToken?: string, channelId?: st
     pageToken,
     channelId,
   });
-  const items: SearchVideo[] = data.items.map((it) => ({
+  // YouTube 검색은 한 쪽 안에 같은 영상을 두 번 돌려줄 때가 있어 영상 번호로 중복을 뺀다.
+  const seen = new Set<string>();
+  const unique = data.items.filter((it) => it.id.videoId && !seen.has(it.id.videoId) && !!seen.add(it.id.videoId));
+  const items: SearchVideo[] = unique.map((it) => ({
     videoId: it.id.videoId,
     title: decodeEntities(it.snippet.title),
     channelId: it.snippet.channelId,
