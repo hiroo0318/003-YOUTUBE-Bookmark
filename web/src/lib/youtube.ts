@@ -30,6 +30,7 @@ export type SearchVideo = {
   channelId: string;
   channelTitle: string;
   thumbnailUrl: string | null;
+  durationSeconds?: number | null;
 };
 
 export async function searchVideos(q: string, pageToken?: string, channelId?: string) {
@@ -51,12 +52,27 @@ export async function searchVideos(q: string, pageToken?: string, channelId?: st
   // YouTube 검색은 한 쪽 안에 같은 영상을 두 번 돌려줄 때가 있어 영상 번호로 중복을 뺀다.
   const seen = new Set<string>();
   const unique = data.items.filter((it) => it.id.videoId && !seen.has(it.id.videoId) && !!seen.add(it.id.videoId));
-  const items: SearchVideo[] = unique.map((it) => ({
+  // 검색 API에는 쇼츠를 빼는 옵션이 없어, 영상 정보(videos.list, 50개당 일반 할당량 1단위)를 한 번 더 조회해
+  // 쇼츠로 추정되는 영상(3분 이하 + 세로)과 재생할 수 없는 영상을 뺀다. 조회에 실패하면 거르지 않고 그대로 보여준다.
+  let details: Map<string, VideoDetail> | null = null;
+  try {
+    details = new Map((await getVideos(unique.map((it) => it.id.videoId))).map((d) => [d.videoId, d]));
+  } catch (e) {
+    console.error("search detail lookup failed", e);
+  }
+  const kept = details
+    ? unique.filter((it) => {
+        const d = details.get(it.id.videoId);
+        return !!d && d.playable && !d.isShortGuess;
+      })
+    : unique;
+  const items: SearchVideo[] = kept.map((it) => ({
     videoId: it.id.videoId,
     title: decodeEntities(it.snippet.title),
     channelId: it.snippet.channelId,
     channelTitle: decodeEntities(it.snippet.channelTitle),
     thumbnailUrl: thumb(it.snippet.thumbnails),
+    durationSeconds: details?.get(it.id.videoId)?.durationSeconds ?? null,
   }));
   return { items, nextPageToken: data.nextPageToken ?? null };
 }

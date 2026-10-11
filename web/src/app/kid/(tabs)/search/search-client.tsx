@@ -122,6 +122,11 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
 
       <ScrollArea resetKey={query} className="flex flex-col gap-4 px-5 pb-4 pt-1">
         {pending && items.length === 0 ? <p className="py-10 text-center text-caption text-sub">찾는 중…</p> : null}
+        {!pending && query && items.length === 0 ? (
+          <p className="py-10 text-center text-caption text-sub">
+            {next ? "이번 결과에는 볼 수 있는 일반 영상이 없어요. 아래 '결과 더 보기'를 눌러 보세요." : "검색 결과가 없어요."}
+          </p>
+        ) : null}
         {items.map((r) => {
           const playable = !approvalMode || r.status === "approved";
           if (playable) {
@@ -129,6 +134,7 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
               <Link key={r.videoId} href={`/kid/watch/${r.videoId}?from=search`} className="flex gap-3 text-ink">
                 <VideoRowBody
                   thumbnailUrl={r.thumbnailUrl}
+                  duration={r.durationSeconds}
                   playable
                   title={r.title}
                   meta={r.channelTitle}
@@ -143,6 +149,7 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
               <button key={r.videoId} type="button" onClick={() => setSheet(r)} className="flex gap-3 text-left text-ink">
                 <VideoRowBody
                   thumbnailUrl={r.thumbnailUrl}
+                  duration={r.durationSeconds}
                   title={r.title}
                   meta={r.channelTitle}
                   tag={
@@ -159,6 +166,7 @@ export function SearchClient({ approvalMode, profileId }: { approvalMode: boolea
             <div key={r.videoId} className="flex gap-3">
               <VideoRowBody
                 thumbnailUrl={r.thumbnailUrl}
+                duration={r.durationSeconds}
                 title={r.title}
                 meta={r.channelTitle}
                 dimTitle={r.status === "rejected"}

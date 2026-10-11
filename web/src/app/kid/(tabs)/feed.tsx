@@ -242,7 +242,7 @@ export function Feed({
             {more.error ? <p className="text-caption text-danger-ink">{more.error}</p> : null}
             {more.items.map((v) => (
               <Link key={v.videoId} href={`/kid/watch/${v.videoId}`} className="flex gap-3 text-ink">
-                <VideoRowBody thumbnailUrl={v.thumbnailUrl} playable title={v.title} meta={v.channelTitle} />
+                <VideoRowBody thumbnailUrl={v.thumbnailUrl} duration={v.durationSeconds} playable title={v.title} meta={v.channelTitle} />
               </Link>
             ))}
           </section>
