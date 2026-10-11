@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { BackHeader } from "@/components/chrome";
 import { Player } from "@/components/player";
 import { WatchLikeButton } from "@/components/like-button";
@@ -12,12 +13,14 @@ import { ensureChannels, ensureVideos } from "@/lib/yt-cache";
 export default async function WatchPage({ params, searchParams }: PageProps<"/kid/watch/[videoId]">) {
   const me = await requireMe("child");
   const { videoId } = await params;
-  const { autoplay, from } = await searchParams;
+  const { autoplay, from, channel: pushChannel } = await searchParams;
   const back = from === "search" ? { href: "/kid/search", label: "검색" } : { href: "/kid", label: "승인 채널 영상" };
 
   await ensureVideos([videoId]).catch(() => undefined);
   // 채널 확인 전이라 서버 권한으로 읽고, 아래에서 승인 여부를 직접 확인한다.
   const video = (await getVideoLites([videoId], { admin: true })).get(videoId);
+  // 승인 알림으로 들어왔는데 계기 영상이 사라졌으면 그 채널로 거른 채널 영상 탭으로 보낸다.
+  if (!video && from === "push") redirect(typeof pushChannel === "string" ? `/kid?channel=${encodeURIComponent(pushChannel)}` : "/kid");
   if (!video) {
     return (
       <>

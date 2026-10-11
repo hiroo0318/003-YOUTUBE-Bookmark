@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireMe } from "@/lib/auth";
 import { getChannelStatusMap, type ChannelStatus } from "@/lib/data";
-import { notifyChild, notifyParents } from "@/lib/push";
+import { notifyChild, notifyMember, notifyParents } from "@/lib/push";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { QuotaExceededError, searchChannels, searchVideos, type SearchChannel, type SearchVideo } from "@/lib/youtube";
 import { addSearchUsage, ensureChannels, ensureVideos, loadOlderVideos, refreshChannelVideos, refreshProfileChannels } from "@/lib/yt-cache";
@@ -76,10 +76,12 @@ export async function requestChannelAction(channelId: string, videoId: string) {
   if (error) return { ok: false as const, error: "요청을 보내지 못했어요." };
   const row = (data as { request_id: string | null; result: string }[])[0];
   if (row?.result === "created") {
+    const { data: ch } = await createAdminClient().from("yt_channel_cache").select("title").eq("channel_id", channelId).maybeSingle();
     await notifyParents(me.familyId, {
       title: "채널 추가 요청",
-      body: `${me.displayName}이(가) 채널 추가를 요청했어요`,
+      body: `${me.displayName}이(가) '${ch?.title ?? "새"}' 채널 추가를 요청했어요`,
       url: `/parent/requests/${row.request_id}`,
+      tag: `request-${row.request_id}`,
     });
   }
   revalidatePath("/kid/search");
@@ -152,11 +154,15 @@ export async function decideRequestAction(requestId: string, decision: "approved
   }
   const { data: ch } = await supabase.from("yt_channel_cache").select("title").eq("channel_id", req.channel_id).maybeSingle();
   const title = ch?.title ?? "채널";
+  // 승인 알림을 누르면 요청할 때 보던 영상을 바로 재생한다(계기 영상이 없으면 그 채널로 거른 채널 영상 탭).
+  const approvedUrl = req.last_trigger_video_id
+    ? `/kid/watch/${req.last_trigger_video_id}?autoplay=1&from=push&channel=${req.channel_id}`
+    : `/kid?channel=${req.channel_id}`;
   await notifyChild(
     req.profile_id,
     decision === "approved"
-      ? { title: "채널이 승인됐어요", body: `'${title}' 채널이 승인됐어요. 지금 볼 수 있어요`, url: `/kid/watch/${req.last_trigger_video_id}?autoplay=1&from=push` }
-      : { title: "요청 결과", body: `'${title}' 채널은 부모님이 허락하지 않았어요`, url: "/kid/requests" },
+      ? { title: "채널이 승인됐어요", body: `'${title}' 채널이 승인됐어요. 지금 볼 수 있어요`, url: approvedUrl, tag: `result-${requestId}` }
+      : { title: "요청 결과", body: `'${title}' 채널은 부모님이 허락하지 않았어요`, url: "/kid/requests", tag: `result-${requestId}` },
   );
   revalidatePath("/parent");
   revalidatePath("/parent/channels");
@@ -226,4 +232,45 @@ export async function setApprovalModeAction(profileId: string, on: boolean) {
   if (error) return { ok: false as const };
   revalidatePath("/parent/settings");
   return { ok: true as const };
+}
+
+// ───── 웹 푸시 구독 (부모·아이 공통) ─────
+
+type PushSub = { endpoint: string; keys: { p256dh: string; auth: string } };
+
+// 이 기기의 구독을 내 계정에 저장한다. 같은 기기를 다른 가족이 쓰던 구독은 먼저 지운다(기기당 한 명).
+export async function savePushSubscriptionAction(sub: PushSub, userAgent: string) {
+  const me = await requireMe();
+  if (!sub?.endpoint?.startsWith("https://") || !sub.keys?.p256dh || !sub.keys?.auth) return { ok: false as const };
+  await createAdminClient().from("push_subscriptions").delete().eq("endpoint", sub.endpoint).neq("member_id", me.memberId);
+  const supabase = await createClient();
+  const { data: existing } = await supabase.from("push_subscriptions").select("id").eq("endpoint", sub.endpoint).maybeSingle();
+  if (existing) return { ok: true as const };
+  const { error } = await supabase.from("push_subscriptions").insert({
+    member_id: me.memberId,
+    endpoint: sub.endpoint,
+    p256dh: sub.keys.p256dh,
+    auth: sub.keys.auth,
+    user_agent: userAgent.slice(0, 300),
+  });
+  if (error) console.error("save push subscription failed", error.message);
+  return { ok: !error };
+}
+
+export async function removePushSubscriptionAction(endpoint: string) {
+  await requireMe();
+  const supabase = await createClient();
+  await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
+  return { ok: true as const };
+}
+
+export async function testPushAction() {
+  const me = await requireMe();
+  const sent = await notifyMember(me.memberId, {
+    title: "채널담 알림 테스트",
+    body: "알림이 잘 도착했어요.",
+    url: me.role === "parent" ? "/parent/settings" : "/kid/requests",
+    tag: "test",
+  });
+  return { ok: sent > 0 };
 }

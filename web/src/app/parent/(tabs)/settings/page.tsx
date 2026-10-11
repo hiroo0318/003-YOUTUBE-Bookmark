@@ -1,4 +1,5 @@
 import { BrandHeader } from "@/components/chrome";
+import { PushSettings } from "@/components/push-settings";
 import { SignOutForm } from "@/components/sign-out";
 import { requireMe } from "@/lib/auth";
 import { getProfiles } from "@/lib/parent-data";
@@ -35,10 +36,8 @@ export default async function SettingsPage() {
           <h2 id="noti" className="text-subhead font-bold">
             알림
           </h2>
-          <div className="flex flex-col gap-1 rounded-2xl border border-line bg-surface p-3.5">
-            <span className="text-body font-semibold">요청 알림(웹 푸시)</span>
-            <span className="text-caption text-sub">다음 업데이트에서 켤 수 있어요. 그전까지는 대기함 배지로 요청을 확인해 주세요.</span>
-          </div>
+          <PushSettings role="parent" />
+          <p className="px-1 text-caption text-sub">알림은 기기마다 따로 켜요. 알림을 못 받아도 대기함에서 요청을 확인할 수 있어요.</p>
         </section>
 
         <section aria-labelledby="use" className="flex flex-col gap-2.5">
