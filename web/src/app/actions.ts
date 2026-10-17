@@ -271,6 +271,7 @@ export async function setChannelStateAction(profileId: string, channelId: string
   }
   revalidatePath("/parent/channels");
   revalidatePath("/parent");
+  revalidatePath(`/parent/channel/${channelId}`);
   return { ok: true as const };
 }
 

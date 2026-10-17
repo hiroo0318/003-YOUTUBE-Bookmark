@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BrandHeader } from "@/components/chrome";
-import { IconPlus } from "@/components/icons";
+import { IconChevron, IconPlus } from "@/components/icons";
 import { ChannelAvatar } from "@/components/video";
 import { requireMe } from "@/lib/auth";
 import { getChannelLites } from "@/lib/data";
@@ -91,13 +91,19 @@ export default async function ChannelsPage({ searchParams }: PageProps<"/parent/
           const c = channels.get(r.channel_id);
           return (
             <div key={r.channel_id} className="flex items-center gap-3 rounded-[14px] border border-line bg-surface px-3.5 py-3">
-              <ChannelAvatar title={c?.title ?? "?"} url={c?.thumbnailUrl} />
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="truncate text-body font-semibold">{c?.title ?? r.channel_id}</span>
-                <span className="text-caption text-sub">
-                  {timeAgo(r.decided_at)} {tab === "approved" ? "승인" : "거절"}
+              {/* 채널을 누르면 부모용 채널 화면(저장된 영상 목록·재생) */}
+              <Link href={`/parent/channel/${r.channel_id}?kid=${kid.id}&tab=${tab}`} className="flex min-w-0 flex-1 items-center gap-3 text-ink">
+                <ChannelAvatar title={c?.title ?? "?"} url={c?.thumbnailUrl} />
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="truncate text-body font-semibold">{c?.title ?? r.channel_id}</span>
+                  <span className="text-caption text-sub">
+                    {timeAgo(r.decided_at)} {tab === "approved" ? "승인" : "거절"}
+                  </span>
+                </div>
+                <span className="flex-none text-sub">
+                  <IconChevron size={16} />
                 </span>
-              </div>
+              </Link>
               <StateButton profileId={kid.id} channelId={r.channel_id} label={tab === "approved" ? "승인 취소" : "거절 풀기"} />
             </div>
           );
