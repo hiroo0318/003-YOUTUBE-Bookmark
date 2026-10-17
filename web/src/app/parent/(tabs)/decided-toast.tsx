@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 import { IconCheck } from "@/components/icons";
 
 // 요청 상세에서 승인·거절 후 대기함으로 돌아오면 결과를 3초 동안 알린다.
-export function DecidedToast({ decided, kid }: { decided: "approved" | "rejected"; kid: string }) {
+export function DecidedToast({ decided, kid, cleanUrl = "/parent" }: { decided: "approved" | "rejected"; kid: string; cleanUrl?: string }) {
   const [show, setShow] = useState(true);
 
   useEffect(() => {
     // 다시 렌더링하지 않고 주소에서 결과 표시만 지운다(새로고침해도 다시 뜨지 않게).
-    window.history.replaceState(null, "", "/parent");
+    window.history.replaceState(null, "", cleanUrl);
     const t = setTimeout(() => setShow(false), 3000);
     return () => clearTimeout(t);
-  }, []);
+  }, [cleanUrl]);
 
   if (!show) return null;
   return (

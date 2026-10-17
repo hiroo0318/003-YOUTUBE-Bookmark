@@ -12,44 +12,80 @@ import { DecidedToast } from "./decided-toast";
 
 export default async function ParentInbox({ searchParams }: PageProps<"/parent">) {
   const me = await requireMe("parent");
-  const { decided, kid: decidedKid } = await searchParams;
+  const { decided, kid: decidedKid, who: whoParam } = await searchParams;
   const supabase = await createClient();
-  const [{ data: pending }, { data: done }, profiles] = await Promise.all([
+  // 아이별로 보기: who = 아이 프로필 ID(없으면 전체). 대기 건수는 아이별로 세야 해서 전체를 받아 거르고, 최근 처리는 DB에서 거른다.
+  const profiles = await getProfiles(me.familyId);
+  const who = profiles.some((p) => p.id === whoParam) ? (whoParam as string) : null;
+  let doneQuery = supabase
+    .from("channel_requests")
+    .select("id, profile_id, channel_id, status, decided_at")
+    .eq("family_id", me.familyId)
+    .neq("status", "pending");
+  if (who) doneQuery = doneQuery.eq("profile_id", who);
+  const [{ data: allPending }, { data: done }] = await Promise.all([
     supabase
       .from("channel_requests")
       .select("id, profile_id, channel_id, trigger_video_ids, last_trigger_video_id, updated_at")
       .eq("family_id", me.familyId)
       .eq("status", "pending")
       .order("updated_at", { ascending: false }),
-    supabase
-      .from("channel_requests")
-      .select("id, profile_id, channel_id, status, decided_at")
-      .eq("family_id", me.familyId)
-      .neq("status", "pending")
-      .order("decided_at", { ascending: false })
-      .limit(10),
-    getProfiles(me.familyId),
+    doneQuery.order("decided_at", { ascending: false }).limit(10),
   ]);
+  const pending = (allPending ?? []).filter((r) => !who || r.profile_id === who);
+  const pendingBy = new Map<string, number>();
+  for (const r of allPending ?? []) pendingBy.set(r.profile_id, (pendingBy.get(r.profile_id) ?? 0) + 1);
+  const filters: { id: string | null; name: string; count: number }[] = [
+    { id: null, name: "전체", count: allPending?.length ?? 0 },
+    ...profiles.map((p) => ({ id: p.id, name: p.name, count: pendingBy.get(p.id) ?? 0 })),
+  ];
   const names = new Map(profiles.map((p) => [p.id, p.name]));
-  const all = [...(pending ?? []), ...(done ?? [])];
+  const all = [...pending, ...(done ?? [])];
   const channels = await getChannelLites(all.map((r) => r.channel_id));
-  const videos = await getVideoLites((pending ?? []).map((r) => r.last_trigger_video_id ?? ""));
+  const videos = await getVideoLites(pending.map((r) => r.last_trigger_video_id ?? ""));
 
   return (
     <>
       <BrandHeader name={me.displayName} email={me.email} variant="parent" />
       {decided === "approved" || decided === "rejected" ? (
-        <DecidedToast decided={decided} kid={typeof decidedKid === "string" ? decidedKid : "아이"} />
+        <DecidedToast decided={decided} kid={typeof decidedKid === "string" ? decidedKid : "아이"} cleanUrl={who ? `/parent?who=${who}` : "/parent"} />
       ) : null}
-      <main className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-3">
+      <main className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-2">
+        {profiles.length > 1 ? (
+          <div role="tablist" aria-label="아이별 보기" className="no-scrollbar flex gap-2 overflow-x-auto">
+            {filters.map((c) => {
+              const on = c.id === who;
+              return (
+                <Link
+                  key={c.id ?? "all"}
+                  role="tab"
+                  aria-selected={on}
+                  href={c.id ? `/parent?who=${c.id}` : "/parent"}
+                  className={`flex h-10 flex-none items-center gap-1.5 rounded-full border px-4 text-callout ${
+                    on ? "border-ink bg-ink font-semibold text-white" : "border-line bg-surface font-medium text-ink"
+                  }`}
+                >
+                  {c.name}
+                  {c.count > 0 ? (
+                    <span className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-label font-bold ${on ? "bg-white text-ink" : "bg-badge text-white"}`}>
+                      {c.count}
+                    </span>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </div>
+        ) : null}
         <div className="flex items-center justify-between">
-          <h2 className="text-subhead font-bold">승인 대기 {pending?.length ?? 0}건</h2>
+          <h2 className="text-subhead font-bold">승인 대기 {pending.length}건</h2>
           <RefreshButton label="대기함 새로고침" />
         </div>
-        {(pending ?? []).length === 0 ? (
-          <p className="rounded-2xl border border-line bg-surface px-4 py-8 text-center text-caption text-sub">대기 중인 요청이 없어요.</p>
+        {pending.length === 0 ? (
+          <p className="rounded-2xl border border-line bg-surface px-4 py-8 text-center text-caption text-sub">
+            {who ? `${profiles.find((p) => p.id === who)?.name ?? "아이"}의 대기 중인 요청이 없어요.` : "대기 중인 요청이 없어요."}
+          </p>
         ) : null}
-        {(pending ?? []).map((r) => {
+        {pending.map((r) => {
           const kid = names.get(r.profile_id) ?? "아이";
           const v = videos.get(r.last_trigger_video_id ?? "");
           return (
