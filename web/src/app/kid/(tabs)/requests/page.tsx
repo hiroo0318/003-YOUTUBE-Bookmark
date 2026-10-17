@@ -20,7 +20,12 @@ export default async function KidRequestsPage() {
     .order("updated_at", { ascending: false })
     .limit(50);
   const requests = rows ?? [];
-  const channels = await getChannelLites(requests.map((r) => r.channel_id));
+  const [channels, { data: states }] = await Promise.all([
+    getChannelLites(requests.map((r) => r.channel_id)),
+    supabase.from("channel_states").select("channel_id, status").eq("profile_id", me.profileId!),
+  ]);
+  // 요청 결과 뒤에 부모가 승인을 취소하거나 거절을 풀었을 수 있어, 지금 채널 상태로 표시를 고친다.
+  const nowState = new Map((states ?? []).map((st) => [st.channel_id as string, st.status as string]));
   if (requests.some((r) => !r.seen_by_child)) await supabase.rpc("mark_requests_seen");
 
   return (
@@ -41,7 +46,8 @@ export default async function KidRequestsPage() {
           const title = channels.get(r.channel_id)?.title ?? "채널";
           const thumb = channels.get(r.channel_id)?.thumbnailUrl;
           const isNew = !r.seen_by_child;
-          if (r.status === "approved") {
+          const reopened = r.status !== "pending" && !nowState.has(r.channel_id); // 승인 취소·거절 풀기 → 다시 요청 가능
+          if (r.status === "approved" && !reopened) {
             // 영상 보기는 '채널 영상' 탭의 역할이다. 카드를 누르면 그 채널이 선택된 채널 영상 탭으로 간다.
             return (
               <Link
@@ -65,11 +71,15 @@ export default async function KidRequestsPage() {
             <div key={r.id} className="flex items-center gap-2.5 rounded-2xl border border-line bg-surface p-3.5">
               <ChannelAvatar title={title} url={thumb} />
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className={`text-body font-semibold ${r.status === "rejected" ? "text-sub" : ""}`}>{title}</span>
+                <span className={`text-body font-semibold ${r.status === "rejected" && !reopened ? "text-sub" : ""}`}>{title}</span>
                 <span className="text-caption text-sub">
                   {r.status === "pending"
                     ? `${timeAgo(r.created_at)} 요청${r.trigger_video_ids.length > 1 ? ` · 영상 ${r.trigger_video_ids.length}개` : ""}`
-                    : `${timeAgo(r.decided_at)} · 다시 요청할 수 없어요`}
+                    : reopened
+                      ? r.status === "approved"
+                        ? "부모님이 승인을 취소했어요 · 다시 요청할 수 있어요"
+                        : "다시 요청할 수 있어요"
+                      : `${timeAgo(r.decided_at)} · 다시 요청할 수 없어요`}
                 </span>
               </div>
               {r.status === "pending" ? (
@@ -77,6 +87,10 @@ export default async function KidRequestsPage() {
                   <IconClock />
                   확인 중
                 </span>
+              ) : reopened && r.status === "approved" ? (
+                <span className="rounded-full bg-warn-bg px-2 py-[3px] text-label font-semibold text-warn-ink">승인 취소됨</span>
+              ) : reopened ? (
+                <span className="rounded-full border border-line px-2 py-[3px] text-label font-semibold text-sub">거절 풀림</span>
               ) : (
                 <span className="rounded-full bg-muted-bg px-2 py-[3px] text-label font-semibold text-muted-ink">거절</span>
               )}

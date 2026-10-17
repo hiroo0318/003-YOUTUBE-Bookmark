@@ -4,7 +4,7 @@ import { ChannelAvatar } from "@/components/video";
 import { requireMe } from "@/lib/auth";
 import { getChannelLites } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
-import { getProfiles } from "@/lib/parent-data";
+import { getProfiles, getStateLog, STATE_ACTION_LABEL } from "@/lib/parent-data";
 import { createClient } from "@/lib/supabase/server";
 import { StateButton } from "@/app/parent/(tabs)/channels/state-button";
 import { ParentChannelVideos } from "./channel-videos";
@@ -21,7 +21,7 @@ export default async function ParentChannelPage({ params, searchParams }: PagePr
   const tab = sp.tab === "rejected" ? "rejected" : "approved";
 
   const supabase = await createClient();
-  const [channels, { data: state }, { data: rows }] = await Promise.all([
+  const [channels, { data: state }, { data: rows }, history] = await Promise.all([
     getChannelLites([channelId]),
     supabase.from("channel_states").select("status, decided_at").eq("profile_id", kid.id).eq("channel_id", channelId).maybeSingle(),
     supabase
@@ -31,6 +31,7 @@ export default async function ParentChannelPage({ params, searchParams }: PagePr
       .eq("playable", true)
       .order("published_at", { ascending: false })
       .limit(1000),
+    getStateLog(me.familyId, { profileId: kid.id, channelId, limit: 10 }),
   ]);
   const channel = channels.get(channelId);
   if (!channel) notFound();
@@ -75,6 +76,21 @@ export default async function ParentChannelPage({ params, searchParams }: PagePr
             YouTube에서 보기 ↗
           </a>
         </div>
+        {history.length > 0 ? (
+          <details className="mx-5 rounded-xl border border-line bg-bg px-3.5 py-2.5">
+            <summary className="cursor-pointer text-caption font-semibold text-sub">변경 이력 {history.length}건</summary>
+            <ul className="mt-2 flex flex-col gap-1.5">
+              {history.map((h) => (
+                <li key={h.id} className="flex justify-between gap-2 text-caption">
+                  <span className="font-semibold">{STATE_ACTION_LABEL[h.action]}</span>
+                  <span className="text-sub">
+                    {h.actor ?? ""} · {timeAgo(h.at)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
         <ParentChannelVideos videos={videos} />
       </main>
     </div>

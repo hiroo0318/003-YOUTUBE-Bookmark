@@ -6,7 +6,7 @@ import { Thumb } from "@/components/video";
 import { requireMe } from "@/lib/auth";
 import { getChannelLites, getVideoLites } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
-import { getProfiles } from "@/lib/parent-data";
+import { getProfiles, getStateLog, STATE_ACTION_LABEL, type StateAction } from "@/lib/parent-data";
 import { createClient } from "@/lib/supabase/server";
 import { DecidedToast } from "./decided-toast";
 
@@ -17,20 +17,14 @@ export default async function ParentInbox({ searchParams }: PageProps<"/parent">
   // 아이별로 보기: who = 아이 프로필 ID(없으면 전체). 대기 건수는 아이별로 세야 해서 전체를 받아 거르고, 최근 처리는 DB에서 거른다.
   const profiles = await getProfiles(me.familyId);
   const who = profiles.some((p) => p.id === whoParam) ? (whoParam as string) : null;
-  let doneQuery = supabase
-    .from("channel_requests")
-    .select("id, profile_id, channel_id, status, decided_at")
-    .eq("family_id", me.familyId)
-    .neq("status", "pending");
-  if (who) doneQuery = doneQuery.eq("profile_id", who);
-  const [{ data: allPending }, { data: done }] = await Promise.all([
+  const [{ data: allPending }, done] = await Promise.all([
     supabase
       .from("channel_requests")
       .select("id, profile_id, channel_id, trigger_video_ids, last_trigger_video_id, updated_at")
       .eq("family_id", me.familyId)
       .eq("status", "pending")
       .order("updated_at", { ascending: false }),
-    doneQuery.order("decided_at", { ascending: false }).limit(10),
+    getStateLog(me.familyId, { profileId: who, limit: 15 }),
   ]);
   const pending = (allPending ?? []).filter((r) => !who || r.profile_id === who);
   const pendingBy = new Map<string, number>();
@@ -40,7 +34,7 @@ export default async function ParentInbox({ searchParams }: PageProps<"/parent">
     ...profiles.map((p) => ({ id: p.id, name: p.name, count: pendingBy.get(p.id) ?? 0 })),
   ];
   const names = new Map(profiles.map((p) => [p.id, p.name]));
-  const all = [...pending, ...(done ?? [])];
+  const all = [...pending.map((r) => ({ channel_id: r.channel_id })), ...done.map((d) => ({ channel_id: d.channelId }))];
   const channels = await getChannelLites(all.map((r) => r.channel_id));
   const videos = await getVideoLites(pending.map((r) => r.last_trigger_video_id ?? ""));
 
@@ -114,23 +108,35 @@ export default async function ParentInbox({ searchParams }: PageProps<"/parent">
           );
         })}
 
-        {(done ?? []).length > 0 ? <h2 className="mt-3 text-subhead font-bold">최근 처리</h2> : null}
-        {(done ?? []).map((r) => (
-          <div key={r.id} className="flex items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5 py-3">
+        {done.length > 0 ? <h2 className="mt-3 text-subhead font-bold">최근 처리</h2> : null}
+        {done.map((d) => (
+          <Link
+            key={d.id}
+            href={`/parent/channel/${d.channelId}?kid=${d.profileId}`}
+            className="flex items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5 py-3 text-ink"
+          >
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="text-body font-semibold">{channels.get(r.channel_id)?.title ?? "채널"}</span>
+              <span className="truncate text-body font-semibold">{channels.get(d.channelId)?.title ?? "채널"}</span>
               <span className="text-caption text-sub">
-                {names.get(r.profile_id) ?? "아이"} · {timeAgo(r.decided_at)}
+                {names.get(d.profileId) ?? "아이"}
+                {d.actor ? ` · ${d.actor}` : ""} · {timeAgo(d.at)}
               </span>
             </div>
-            {r.status === "approved" ? (
-              <span className="rounded-full bg-accent-soft px-2 py-[3px] text-label font-semibold text-accent-strong">승인</span>
-            ) : (
-              <span className="rounded-full bg-muted-bg px-2 py-[3px] text-label font-semibold text-muted-ink">거절</span>
-            )}
-          </div>
+            <ActionTag action={d.action} />
+          </Link>
         ))}
       </main>
     </>
   );
+}
+
+// 처리 종류 표시: 승인(파랑), 거절(회색), 승인 취소(주황), 거절 풀기(테두리)
+function ActionTag({ action }: { action: StateAction }) {
+  const tone: Record<StateAction, string> = {
+    approved: "bg-accent-soft text-accent-strong",
+    rejected: "bg-muted-bg text-muted-ink",
+    approval_cancelled: "bg-warn-bg text-warn-ink",
+    rejection_cleared: "border border-line bg-surface text-sub",
+  };
+  return <span className={`flex-none rounded-full px-2 py-[3px] text-label font-semibold ${tone[action]}`}>{STATE_ACTION_LABEL[action]}</span>;
 }
