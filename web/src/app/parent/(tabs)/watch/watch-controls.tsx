@@ -5,7 +5,7 @@ import { setTodayBonusAction, setWatchLimitsAction } from "@/app/actions";
 
 const OPTIONS: { value: string; label: string }[] = [
   { value: "", label: "제한 없음" },
-  ...[15, 30, 45, 60, 90, 120, 150, 180, 240].map((m) => ({
+  ...[5, 15, 30, 45, 60, 90, 120, 150, 180, 240].map((m) => ({
     value: String(m),
     label: m < 60 ? `${m}분` : m % 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m / 60}시간`,
   })),
