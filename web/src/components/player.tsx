@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type YTPlayer = { destroy(): void };
+type YTPlayer = { destroy(): void; pauseVideo(): void };
+// 재생 상태: -1 시작 전, 0 끝남, 1 재생 중, 2 일시정지, 3 버퍼링, 5 준비됨
+export type PlayerControl = { pause(): void };
 type YTNamespace = {
   Player: new (
     el: HTMLElement,
@@ -10,7 +12,7 @@ type YTNamespace = {
       videoId: string;
       host?: string;
       playerVars?: Record<string, string | number>;
-      events?: { onError?: (e: { data: number }) => void };
+      events?: { onError?: (e: { data: number }) => void; onStateChange?: (e: { data: number }) => void };
     },
   ) => YTPlayer;
 };
@@ -40,9 +42,24 @@ function loadApi() {
 }
 
 // YouTube 기본 플레이어를 그대로 쓴다: 위에 아무것도 덮지 않고, rel=0으로 종료 후 같은 채널 영상만 추천.
-export function Player({ videoId, autoplay = false, rounded = false }: { videoId: string; autoplay?: boolean; rounded?: boolean }) {
+// onState: 재생 상태가 바뀔 때마다 알린다(시청 시간 기록용). 바뀌어도 플레이어를 다시 만들지 않도록 ref로 둔다.
+export function Player({
+  videoId,
+  autoplay = false,
+  rounded = false,
+  onState,
+}: {
+  videoId: string;
+  autoplay?: boolean;
+  rounded?: boolean;
+  onState?: (state: number, control: PlayerControl) => void;
+}) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
+  const onStateRef = useRef(onState);
+  useEffect(() => {
+    onStateRef.current = onState;
+  }, [onState]);
 
   useEffect(() => {
     let player: YTPlayer | null = null;
@@ -55,7 +72,10 @@ export function Player({ videoId, autoplay = false, rounded = false }: { videoId
         videoId,
         host: "https://www.youtube-nocookie.com",
         playerVars: { rel: 0, playsinline: 1, autoplay: autoplay ? 1 : 0 },
-        events: { onError: () => setFailed(true) },
+        events: {
+          onError: () => setFailed(true),
+          onStateChange: (e) => onStateRef.current?.(e.data, { pause: () => player?.pauseVideo() }),
+        },
       });
     });
     return () => {

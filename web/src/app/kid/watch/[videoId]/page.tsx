@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BackHeader } from "@/components/chrome";
-import { Player } from "@/components/player";
+import { WatchPlayer } from "@/components/watch-player";
 import { WatchLikeButton } from "@/components/like-button";
 import { ChannelAvatar, VideoRowBody } from "@/components/video";
 import { requireMe } from "@/lib/auth";
@@ -51,6 +51,9 @@ export default async function WatchPage({ params, searchParams }: PageProps<"/ki
 
   const supabase = await createClient();
   const liked = status === "approved" ? await isLiked(me.profileId!, videoId) : false;
+  // 오늘 사용 시간·한도(채널담 기록). 조회 실패 시 제한 없이 재생한다.
+  const { data: watch } = await supabase.rpc("add_watch_seconds", { p_seconds: 0 });
+  const today = (watch as { used_seconds: number; limit_seconds: number | null }[] | null)?.[0];
   const { data: more } =
     status === "approved"
       ? await supabase
@@ -66,7 +69,12 @@ export default async function WatchPage({ params, searchParams }: PageProps<"/ki
   return (
     <div className="flex flex-col bg-surface pb-6">
       <BackHeader {...back} />
-      <Player videoId={videoId} autoplay={autoplay === "1"} />
+      <WatchPlayer
+        videoId={videoId}
+        autoplay={autoplay === "1"}
+        initialUsed={today?.used_seconds ?? 0}
+        initialLimit={today?.limit_seconds ?? null}
+      />
       <div className="flex flex-col gap-[18px] px-5 pt-4">
         <div className="flex flex-col gap-2.5">
           <h1 className="text-heading font-bold">{video.title}</h1>

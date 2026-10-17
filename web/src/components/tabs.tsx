@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { CountBadge } from "@/components/chrome";
-import { IconFamily, IconInbox, IconList, IconSearch, IconSettings, IconVideos } from "@/components/icons";
+import { IconClock, IconFamily, IconInbox, IconList, IconSearch, IconSettings, IconVideos } from "@/components/icons";
 
 type Tab = { href: string; label: string; icon: ReactNode; badge?: number; exact?: boolean };
 
@@ -57,6 +57,7 @@ export function ParentTabs({ inboxBadge = 0 }: { inboxBadge?: number }) {
       tabs={[
         { href: "/parent", label: "대기함", icon: <IconInbox />, badge: inboxBadge, exact: true },
         { href: "/parent/channels", label: "채널 관리", icon: <IconVideos /> },
+        { href: "/parent/watch", label: "시청", icon: <IconClock size={22} /> },
         { href: "/parent/family", label: "가족", icon: <IconFamily /> },
         { href: "/parent/settings", label: "설정", icon: <IconSettings /> },
       ]}

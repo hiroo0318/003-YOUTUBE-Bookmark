@@ -37,3 +37,11 @@ export function clockTime(iso: string | null | undefined) {
 }
 
 export const initial = (s: string) => (s.trim()[0] ?? "?").toUpperCase();
+
+// 시청 시간 표시: 0분, 42분, 1시간, 1시간 5분
+export function formatMinutes(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  if (m < 60) return `${m}분`;
+  const h = Math.floor(m / 60);
+  return m % 60 ? `${h}시간 ${m % 60}분` : `${h}시간`;
+}

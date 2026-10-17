@@ -149,6 +149,69 @@ export async function toggleLikeAction(videoId: string, on: boolean) {
   return { ok: true as const };
 }
 
+// ───── 시청 기록·시간 (채널담에서 기록한 값, YouTube 수치 아님) ─────
+
+// 재생이 실제로 시작될 때 1회 기록한다(많이 본 영상·채널 집계용).
+export async function recordPlayAction(videoId: string) {
+  const me = await requireMe("child");
+  const { data: v } = await createAdminClient().from("yt_video_cache").select("channel_id").eq("video_id", videoId).maybeSingle();
+  if (!v) return { ok: false as const };
+  const supabase = await createClient();
+  const { error } = await supabase.from("watch_plays").insert({ profile_id: me.profileId!, video_id: videoId, channel_id: v.channel_id });
+  if (error) console.error("record play failed", error.message);
+  return { ok: !error };
+}
+
+// 재생 중 쌓인 시청 초를 더하고 오늘 사용·한도(초, 한도 없음 = null)를 돌려준다.
+export async function addWatchSecondsAction(seconds: number) {
+  await requireMe("child");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("add_watch_seconds", { p_seconds: Math.round(seconds) });
+  if (error) {
+    console.error("add watch seconds failed", error.message);
+    return { ok: false as const };
+  }
+  const row = (data as { used_seconds: number; limit_seconds: number | null }[])[0];
+  return { ok: true as const, used: row?.used_seconds ?? 0, limit: row?.limit_seconds ?? null };
+}
+
+// 부모: 아이별 하루 한도(평일·주말, 분). null = 제한 없음.
+export async function setWatchLimitsAction(profileId: string, weekdayMinutes: number | null, weekendMinutes: number | null) {
+  const me = await requireMe("parent");
+  const clean = (m: number | null) => (m == null || Number.isNaN(m) ? null : Math.max(0, Math.min(1440, Math.round(m))));
+  const supabase = await createClient();
+  const { error } = await supabase.from("watch_limits").upsert({
+    profile_id: profileId,
+    weekday_minutes: clean(weekdayMinutes),
+    weekend_minutes: clean(weekendMinutes),
+    updated_by: me.memberId,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) return { ok: false as const, error: "저장하지 못했어요." };
+  revalidatePath("/parent/watch");
+  return { ok: true as const };
+}
+
+// 부모: 오늘 보너스 시간. add > 0이면 더하고, add = 0이면 오늘 보너스를 없앤다.
+export async function setTodayBonusAction(profileId: string, add: number) {
+  const me = await requireMe("parent");
+  const supabase = await createClient();
+  const { data: today } = await supabase.rpc("kst_today");
+  const day = today as string;
+  const { data: cur } = await supabase.from("watch_bonus").select("minutes").eq("profile_id", profileId).eq("day", day).maybeSingle();
+  const minutes = add > 0 ? Math.min(1440, (cur?.minutes ?? 0) + Math.round(add)) : 0;
+  const { error } = await supabase.from("watch_bonus").upsert({
+    profile_id: profileId,
+    day,
+    minutes,
+    granted_by: me.memberId,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) return { ok: false as const, error: "저장하지 못했어요." };
+  revalidatePath("/parent/watch");
+  return { ok: true as const };
+}
+
 export async function refreshFeedAction() {
   const me = await requireMe("child");
   await refreshProfileChannels(me.profileId!, { force: true });
