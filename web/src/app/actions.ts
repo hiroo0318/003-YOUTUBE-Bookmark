@@ -180,14 +180,19 @@ export async function setWatchLimitsAction(profileId: string, weekdayMinutes: nu
   const me = await requireMe("parent");
   const clean = (m: number | null) => (m == null || Number.isNaN(m) ? null : Math.max(0, Math.min(1440, Math.round(m))));
   const supabase = await createClient();
-  const { error } = await supabase.from("watch_limits").upsert({
-    profile_id: profileId,
+  // upsert는 profile_id 수정 권한까지 필요해 막히므로, 있으면 고치고 없으면 새로 넣는다.
+  const values = {
     weekday_minutes: clean(weekdayMinutes),
     weekend_minutes: clean(weekendMinutes),
     updated_by: me.memberId,
     updated_at: new Date().toISOString(),
-  });
-  if (error) return { ok: false as const, error: "저장하지 못했어요." };
+  };
+  const { data: updated, error: upErr } = await supabase.from("watch_limits").update(values).eq("profile_id", profileId).select("profile_id");
+  const { error } = upErr || updated?.length ? { error: upErr } : await supabase.from("watch_limits").insert({ profile_id: profileId, ...values });
+  if (error) {
+    console.error("save watch limits failed", error.message);
+    return { ok: false as const, error: "저장하지 못했어요." };
+  }
   revalidatePath("/parent/watch");
   return { ok: true as const };
 }
@@ -200,14 +205,14 @@ export async function setTodayBonusAction(profileId: string, add: number) {
   const day = today as string;
   const { data: cur } = await supabase.from("watch_bonus").select("minutes").eq("profile_id", profileId).eq("day", day).maybeSingle();
   const minutes = add > 0 ? Math.min(1440, (cur?.minutes ?? 0) + Math.round(add)) : 0;
-  const { error } = await supabase.from("watch_bonus").upsert({
-    profile_id: profileId,
-    day,
-    minutes,
-    granted_by: me.memberId,
-    updated_at: new Date().toISOString(),
-  });
-  if (error) return { ok: false as const, error: "저장하지 못했어요." };
+  const values = { minutes, granted_by: me.memberId, updated_at: new Date().toISOString() };
+  const { error } = cur
+    ? await supabase.from("watch_bonus").update(values).eq("profile_id", profileId).eq("day", day)
+    : await supabase.from("watch_bonus").insert({ profile_id: profileId, day, ...values });
+  if (error) {
+    console.error("save watch bonus failed", error.message);
+    return { ok: false as const, error: "저장하지 못했어요." };
+  }
   revalidatePath("/parent/watch");
   return { ok: true as const };
 }
