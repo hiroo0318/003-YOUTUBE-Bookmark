@@ -67,40 +67,74 @@ export function LimitForm({ profileId, weekday, weekend }: { profileId: string; 
   );
 }
 
-// 오늘 보너스 시간: 오늘 한도에만 더해지고 자정에 끝난다.
+// 오늘 보너스 시간: 오늘 한도에만 더해지고 자정에 끝난다. +10·+30·+60분 또는 직접 입력(1~600분).
 export function BonusButtons({ profileId, bonus }: { profileId: string; bonus: number }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState("");
+  const [custom, setCustom] = useState<string | null>(null);
   const run = (add: number) =>
     start(async () => {
       const r = await setTodayBonusAction(profileId, add);
       setMsg(r.ok ? "" : r.error);
+      if (r.ok) setCustom(null);
     });
+  const customMinutes = Number(custom);
+  const customValid = Number.isInteger(customMinutes) && customMinutes >= 1 && customMinutes <= 600;
+  const chip = "h-10 rounded-[10px] border px-3.5 text-callout font-semibold disabled:opacity-50";
+
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-2">
-        {[10, 30].map((m) => (
-          <button
-            key={m}
-            type="button"
-            disabled={pending}
-            onClick={() => run(m)}
-            className="h-10 rounded-[10px] border border-accent-line bg-surface px-3.5 text-callout font-semibold text-accent-strong disabled:opacity-50"
-          >
-            오늘 +{m}분
+        {[10, 30, 60].map((m) => (
+          <button key={m} type="button" disabled={pending} onClick={() => run(m)} className={`${chip} border-accent-line bg-surface text-accent-strong`}>
+            +{m}분
           </button>
         ))}
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => setCustom(custom == null ? "" : null)}
+          aria-expanded={custom != null}
+          className={`${chip} ${custom != null ? "border-ink bg-ink text-white" : "border-line bg-surface text-ink"}`}
+        >
+          직접 입력
+        </button>
         {bonus > 0 ? (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => run(0)}
-            className="h-10 rounded-[10px] border border-line bg-surface px-3.5 text-callout font-semibold text-sub disabled:opacity-50"
-          >
+          <button type="button" disabled={pending} onClick={() => run(0)} className={`${chip} border-line bg-surface text-sub`}>
             보너스 취소
           </button>
         ) : null}
       </div>
+      {custom != null ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (customValid) run(customMinutes);
+          }}
+          className="flex items-center gap-2"
+        >
+          <label htmlFor="bonus-custom" className="sr-only">
+            보너스 분
+          </label>
+          <input
+            id="bonus-custom"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={600}
+            autoFocus
+            value={custom}
+            onChange={(e) => setCustom(e.target.value)}
+            placeholder="예: 20"
+            className="h-12 w-28 appearance-none rounded-xl border border-line bg-surface px-3.5 text-control outline-none focus:border-accent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          <span className="text-body text-sub">분</span>
+          <button type="submit" disabled={!customValid || pending} className="ml-auto h-12 rounded-xl bg-accent px-5 text-control font-semibold text-white disabled:opacity-50">
+            더하기
+          </button>
+        </form>
+      ) : null}
+      <p className="text-caption text-sub">{bonus > 0 ? `오늘 보너스 ${bonus}분이 더해졌어요. 자정에 끝나요.` : "오늘만 시청 시간을 더 줄 수 있어요."}</p>
       {msg ? <p className="text-caption text-danger-ink">{msg}</p> : null}
     </div>
   );
