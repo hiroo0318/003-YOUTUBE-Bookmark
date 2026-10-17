@@ -15,7 +15,7 @@ const PERIODS: [WatchPeriod, string][] = [
   ["30d", "30일"],
 ];
 
-// 부모 '시청' 탭: 아이별 오늘 시청 시간·한도·보너스, 주간·월간 누적, 많이 본 영상·채널, 하루 한도 설정.
+// 부모 '시청' 탭: 아이별 오늘 시청 시간·한도·보너스, 주간·월간 누적, 하루 한도 설정, 많이 본 영상·채널.
 export default async function WatchPage({ searchParams }: PageProps<"/parent/watch">) {
   const me = await requireMe("parent");
   const sp = await searchParams;
@@ -121,6 +121,16 @@ export default async function WatchPage({ searchParams }: PageProps<"/parent/wat
           </div>
         </section>
 
+        <section aria-labelledby="limit" className="flex flex-col gap-2.5">
+          <h2 id="limit" className="text-subhead font-bold">
+            하루 시청 한도
+          </h2>
+          <LimitForm key={kid.id} profileId={kid.id} weekday={s.limits.weekday} weekend={s.limits.weekend} />
+          <p className="px-1 text-caption leading-normal text-sub">
+            한도를 다 쓰면 채널담에서 영상이 멈추고, 한국 시간 자정에 다시 볼 수 있어요. YouTube 앱 등 다른 곳에서 보는 시간은 포함되지 않아요.
+          </p>
+        </section>
+
         <section aria-labelledby="top" className="flex flex-col gap-2.5">
           <div className="flex items-center justify-between">
             <h2 id="top" className="text-subhead font-bold">
@@ -181,16 +191,6 @@ export default async function WatchPage({ searchParams }: PageProps<"/parent/wat
             </div>
           </section>
         ) : null}
-
-        <section aria-labelledby="limit" className="flex flex-col gap-2.5">
-          <h2 id="limit" className="text-subhead font-bold">
-            하루 시청 한도
-          </h2>
-          <LimitForm key={kid.id} profileId={kid.id} weekday={s.limits.weekday} weekend={s.limits.weekend} />
-          <p className="px-1 text-caption leading-normal text-sub">
-            한도를 다 쓰면 채널담에서 영상이 멈추고, 한국 시간 자정에 다시 볼 수 있어요. YouTube 앱 등 다른 곳에서 보는 시간은 포함되지 않아요.
-          </p>
-        </section>
 
         <p className="px-1 text-label text-sub">시청 시간과 재생 횟수는 채널담에서 기록한 값이에요(YouTube 수치 아님).</p>
       </main>
