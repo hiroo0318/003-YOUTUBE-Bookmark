@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RefreshButton } from "@/components/auto-refresh";
 import { BrandHeader } from "@/components/chrome";
 import { IconChevron } from "@/components/icons";
 import { Thumb } from "@/components/video";
@@ -41,7 +42,10 @@ export default async function ParentInbox({ searchParams }: PageProps<"/parent">
         <DecidedToast decided={decided} kid={typeof decidedKid === "string" ? decidedKid : "아이"} />
       ) : null}
       <main className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-3">
-        <h2 className="text-subhead font-bold">승인 대기 {pending?.length ?? 0}건</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-subhead font-bold">승인 대기 {pending?.length ?? 0}건</h2>
+          <RefreshButton label="대기함 새로고침" />
+        </div>
         {(pending ?? []).length === 0 ? (
           <p className="rounded-2xl border border-line bg-surface px-4 py-8 text-center text-caption text-sub">대기 중인 요청이 없어요.</p>
         ) : null}

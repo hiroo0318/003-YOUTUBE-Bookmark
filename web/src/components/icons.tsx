@@ -109,3 +109,9 @@ export const IconHeart = ({ size = 20, filled = false }: P & { filled?: boolean 
     <path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" />
   </svg>
 );
+export const IconRefresh = ({ size = 18, className }: P) => (
+  <svg {...base(size)} className={className}>
+    <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+    <path d="M20 4v7h-7" />
+  </svg>
+);

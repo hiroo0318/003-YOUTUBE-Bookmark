@@ -10,14 +10,20 @@ self.addEventListener("push", (event) => {
     data = { body: event.data ? event.data.text() : "" };
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || "채널담", {
-      body: data.body || "",
-      icon: "/icons/icon-192.png",
-      badge: "/icons/badge-96.png",
-      tag: data.tag,
-      lang: "ko",
-      data: { url: data.url || "/" },
-    }),
+    Promise.all([
+      self.registration.showNotification(data.title || "채널담", {
+        body: data.body || "",
+        icon: "/icons/icon-192.png",
+        badge: "/icons/badge-96.png",
+        tag: data.tag,
+        lang: "ko",
+        data: { url: data.url || "/" },
+      }),
+      // 열려 있는 채널담 화면에 알려 대기함·내 요청을 바로 다시 받게 한다.
+      self.clients
+        .matchAll({ type: "window", includeUncontrolled: true })
+        .then((windows) => windows.forEach((w) => w.postMessage({ type: "push", tag: data.tag }))),
+    ]),
   );
 });
 

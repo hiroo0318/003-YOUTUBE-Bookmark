@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RefreshButton } from "@/components/auto-refresh";
 import { BrandHeader } from "@/components/chrome";
 import { IconChevron, IconClock } from "@/components/icons";
 import { PushSettings } from "@/components/push-settings";
@@ -29,7 +30,10 @@ export default async function KidRequestsPage() {
         <div className="mt-2">
           <PushSettings role="child" />
         </div>
-        <h2 className="mt-2 text-subhead font-bold">내가 보낸 요청</h2>
+        <div className="mt-2 flex items-center justify-between">
+          <h2 className="text-subhead font-bold">내가 보낸 요청</h2>
+          <RefreshButton label="내 요청 새로고침" />
+        </div>
         {requests.length === 0 ? (
           <p className="py-10 text-center text-caption text-sub">아직 보낸 요청이 없어요. 검색에서 보고 싶은 채널을 요청해 보세요.</p>
         ) : null}

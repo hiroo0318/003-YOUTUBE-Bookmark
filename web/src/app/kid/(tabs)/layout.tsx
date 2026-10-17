@@ -1,3 +1,4 @@
+import { AutoRefresh } from "@/components/auto-refresh";
 import { KidTabs } from "@/components/tabs";
 import { requireMe } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -16,6 +17,8 @@ export default async function KidLayout({ children }: LayoutProps<"/kid">) {
     <div className="flex h-dvh flex-col overflow-hidden">
       <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       <KidTabs requestBadge={count ?? 0} />
+      {/* 내 요청은 열어 둔 동안 30초마다, 모든 아이 화면은 알림 수신·앱 복귀 때 다시 받는다 */}
+      <AutoRefresh pollPaths={["/kid/requests"]} />
     </div>
   );
 }
