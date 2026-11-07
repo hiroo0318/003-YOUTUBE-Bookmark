@@ -25,8 +25,8 @@ export async function proxy(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   const path = request.nextUrl.pathname;
-  // /api/cron은 로그인 대신 CRON_SECRET으로 보호한다.
-  const isPublic = path === "/login" || path.startsWith("/auth/") || path.startsWith("/api/cron/");
+  // /api/cron은 로그인 대신 CRON_SECRET으로 보호한다. /api/health는 서버 깨우기용(내용 없음).
+  const isPublic = path === "/login" || path.startsWith("/auth/") || path.startsWith("/api/cron/") || path === "/api/health";
 
   if (!data?.claims && !isPublic) {
     const url = request.nextUrl.clone();
